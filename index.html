@@ -2,66 +2,350 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ferah EV | İstanbul</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        :root { --gold: #f5a623; --green: #8bc34a; --dark: #000000; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--dark); color: white; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
-        .font-logo { font-family: 'Montserrat', sans-serif; }
-        .gold-gradient { background: linear-gradient(135deg, #f5a623 0%, #ff8c00 100%); }
-        .glass { background: rgba(15, 15, 15, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
-        .input-box { background: #111; border: 1px solid #222; border-radius: 1rem; padding: 1.2rem; width: 100%; color: white; outline: none; transition: 0.3s; }
-        .input-box:focus { border-color: var(--gold); background: #161616; }
-        button:active { transform: scale(0.96); }
+        :root {
+            --gold: #f5a623;
+            --gold-dark: #ff8c00;
+            --green: #8bc34a;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overscroll-behavior: none;
+        }
+        .logo-font { font-family: 'Montserrat', sans-serif; }
+        .gold-gradient { background: linear-gradient(135deg, #f5a623, #ff8c00); }
+        .glass {
+            background: rgba(20, 20, 20, 0.85);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .input {
+            background: #111;
+            border: 1px solid #333;
+            transition: all 0.3s;
+        }
+        .input:focus {
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
+        }
+        .card-hover:hover { transform: translateY(-4px); }
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease;
+        }
     </style>
 </head>
-<body class="antialiased select-none">
+<body class="min-h-screen pb-24">
 
-    <div id="login-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-8">
-        <div class="mb-12 text-center animate-pulse">
-            <h1 class="text-5xl font-black font-logo tracking-tighter italic">FERAH<span class="text-[#f5a623]">EV</span></h1>
-            <p class="text-[#8bc34a] font-bold tracking-[0.4em] text-[10px] mt-1 uppercase">İstanbul</p>
-        </div>
-        <div class="w-full max-w-sm space-y-4">
-            <input type="text" id="login-user" placeholder="Kullanıcı Adı" class="input-box text-center font-bold uppercase">
-            <input type="password" id="login-pass" placeholder="Şifre" class="input-box text-center font-bold">
-            <button id="btn-do-login" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/20">GİRİŞ YAP</button>
-            <button id="btn-admin-gate" class="w-full py-2 text-[10px] text-zinc-700 font-bold uppercase tracking-widest opacity-50 mt-4">Sistem Yönetimi</button>
+    <!-- Login Screen -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center p-6">
+        <div class="w-full max-w-md text-center">
+            <div class="mb-10">
+                <h1 class="logo-font text-6xl font-black tracking-tighter text-white">FERAH<span class="gold-gradient bg-clip-text text-transparent">EV</span></h1>
+                <p class="text-[#8bc34a] text-sm font-medium tracking-[4px] mt-2">İSTANBUL</p>
+            </div>
+            
+            <div class="glass rounded-3xl p-8 space-y-6">
+                <input id="login-user" type="text" placeholder="Kullanıcı Adı" class="input w-full px-6 py-5 rounded-2xl text-center text-lg font-medium uppercase">
+                <input id="login-pass" type="password" placeholder="Şifre" class="input w-full px-6 py-5 rounded-2xl text-center text-lg font-medium">
+                
+                <button onclick="doLogin()" class="gold-gradient w-full py-5 rounded-2xl font-bold text-xl text-black tracking-widest shadow-xl">GİRİŞ YAP</button>
+                
+                <button onclick="adminGate()" class="text-xs text-zinc-500 hover:text-zinc-400 transition-colors">Yönetici Erişimi</button>
+            </div>
         </div>
     </div>
 
-    <div id="main-app" class="hidden min-h-screen flex flex-col">
-        <header class="sticky top-0 z-50 glass border-b border-white/5 px-6 py-5 flex justify-between items-center">
-            <div class="flex flex-col">
-                <span class="font-logo font-black text-xl tracking-tighter italic">FERAH<span class="text-[#f5a623]">EV</span></span>
-                <span id="role-tag" class="text-[8px] text-[#8bc34a] font-bold tracking-[0.2em] uppercase">İstanbul</span>
+    <!-- Main App -->
+    <div id="main-app" class="hidden">
+        <!-- Header -->
+        <header class="glass sticky top-0 z-40 px-6 py-5 flex items-center justify-between border-b border-white/10">
+            <div>
+                <h1 class="logo-font text-2xl font-black tracking-tighter">FERAH<span class="text-[#f5a623]">EV</span></h1>
+                <p id="role-tag" class="text-[10px] text-[#8bc34a] font-medium tracking-widest">İSTANBUL</p>
             </div>
-            <button onclick="location.reload()" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-500">ÇIK</button>
+            <div class="flex items-center gap-3">
+                <span id="user-display" class="font-medium text-sm"></span>
+                <button onclick="logout()" class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white">✕</button>
+            </div>
         </header>
 
-        <main class="flex-1 pb-32 p-6 overflow-y-auto">
-            <div id="page-home" class="page space-y-6">
-                <h2 class="text-2xl font-black italic uppercase tracking-tighter">Selam, <span id="user-display" class="text-zinc-500">...</span></h2>
-                
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div><p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Risale-i Nur</p><p class="text-4xl font-black italic"><span id="val-risale">0</span></p></div>
-                        <div class="text-2xl">📖</div>
+        <main class="p-6 space-y-8 overflow-y-auto" style="height: calc(100vh - 140px);">
+
+            <!-- Dashboard (Home) -->
+            <div id="page-home" class="space-y-8">
+                <div class="text-center">
+                    <p class="text-zinc-400 text-sm">Hoş geldin,</p>
+                    <h2 id="welcome-name" class="text-3xl font-bold mt-1"></h2>
+                </div>
+
+                <!-- Progress Cards -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass rounded-3xl p-6 card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs tracking-widest text-zinc-500">RİSALE-İ NUR</p>
+                                <p id="total-risale" class="text-5xl font-black mt-3">0</p>
+                            </div>
+                            <div class="text-4xl">📖</div>
+                        </div>
                     </div>
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div><p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest">Kur'an-ı Kerim</p><p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span></p></div>
-                        <div class="text-2xl">🕌</div>
+                    <div class="glass rounded-3xl p-6 card-hover">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs tracking-widest text-[#f5a623]">KUR'AN-I KERİM</p>
+                                <p id="total-quran" class="text-5xl font-black mt-3 text-[#f5a623]">0</p>
+                            </div>
+                            <div class="text-4xl">🕌</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Admin Paneli -->
-                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
-                    <h3 class="text-xs font-black text-[#8bc34a] tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
-                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4">
-                        <input type="text" id="new-user-name" placeholder="Yeni Kullanıcı Adı" class="input-box">
-                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box">
+                <!-- Weekly Progress -->
+                <div class="glass rounded-3xl p-7">
+                    <p class="text-xs uppercase tracking-widest text-zinc-500 mb-4">Bu Hafta İlerleme</p>
+                    <div class="flex justify-center">
+                        <svg id="progress-svg" width="160" height="160" class="relative">
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="#222" stroke-width="14"></circle>
+                            <circle id="progress-circle" cx="80" cy="80" r="70" fill="none" stroke="#f5a623" stroke-width="14" stroke-dasharray="439.82" stroke-dashoffset="439.82" stroke-linecap="round" transform="rotate(-90 80 80)"></circle>
+                        </svg>
+                    </div>
+                    <p id="progress-percent" class="text-center text-2xl font-bold mt-4">0%</p>
+                </div>
+
+                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl flex items-center justify-center gap-3 shadow-2xl">
+                    <span>Yeni Kayıt Ekle</span>
+                    <span class="text-3xl">+</span>
+                </button>
+            </div>
+
+            <!-- Entry Page -->
+            <div id="page-entry" class="hidden space-y-8">
+                <div class="glass rounded-3xl p-8">
+                    <h3 class="text-lg font-semibold mb-6 text-center">Bugünkü İbadet Kaydı</h3>
+                    <input id="entry-date" type="date" class="input w-full px-6 py-5 rounded-2xl text-center mb-6">
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-xs text-zinc-500 mb-2">Risale-i Nur Sayfa Sayısı</label>
+                            <input id="in-r" type="number" placeholder="0" class="input w-full px-6 py-5 rounded-2xl text-3xl text-center">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-zinc-500 mb-2">Kur'an-ı Kerim Sayfa Sayısı</label>
+                            <input id="in-q" type="number" placeholder="0" class="input w-full px-6 py-5 rounded-2xl text-3xl text-center text-[#f5a623]">
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl">KAYDI TAMAMLA</button>
+            </div>
+
+            <!-- Admin Panel -->
+            <div id="admin-only-section" class="hidden space-y-8">
+                <h3 class="uppercase text-xs tracking-[2px] text-[#8bc34a] font-bold">Yönetici Paneli</h3>
+                
+                <div class="glass rounded-3xl p-7 space-y-6">
+                    <input id="new-user-name" type="text" placeholder="Yeni Kullanıcı Adı (küçük harf)" class="input w-full px-6 py-5 rounded-2xl">
+                    <input id="new-user-pass" type="text" placeholder="Şifre" class="input w-full px-6 py-5 rounded-2xl">
+                    <button onclick="addUser()" class="w-full py-5 bg-[#8bc34a] text-black font-bold rounded-2xl">KULLANICI EKLE</button>
+                </div>
+
+                <div>
+                    <p class="text-xs text-zinc-500 mb-3">Kayıtlı Kullanıcılar</p>
+                    <div id="user-list-render" class="space-y-3"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-8 py-4 flex justify-around items-center z-50">
+            <button onclick="nav('home')" class="flex flex-col items-center text-[#f5a623]">
+                <span class="text-2xl">📊</span>
+                <span class="text-[10px] mt-1">Ana Sayfa</span>
+            </button>
+            <button onclick="nav('entry')" class="w-16 h-16 -mt-10 gold-gradient rounded-full flex items-center justify-center text-4xl text-black shadow-2xl ring-8 ring-black">✚</button>
+            <button onclick="nav('home')" class="flex flex-col items-center opacity-50">
+                <span class="text-2xl">🏆</span>
+                <span class="text-[10px] mt-1">Başarılar</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
+            authDomain: "ferahev.firebaseapp.com",
+            projectId: "ferahev",
+            storageBucket: "ferahev.firebasestorage.app",
+            messagingSenderId: "937908607106",
+            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let sessionUser = null;
+
+        // ============== LOGIN ==============
+        async function doLogin() {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+            if (!u || !p) return alert("Kullanıcı adı ve şifre giriniz.");
+
+            try {
+                const snap = await getDoc(doc(db, 'users', u));
+                if (snap.exists() && snap.data().password === p) {
+                    sessionUser = { id: u, ...snap.data() };
+                    startApp();
+                } else {
+                    alert("Hatalı giriş bilgileri.");
+                }
+            } catch (e) {
+                alert("Bağlantı hatası: " + e.message);
+            }
+        }
+
+        function adminGate() {
+            if (prompt("Yönetici şifresi:") === "ferah123") {
+                sessionUser = { id: 'admin', role: 'admin' };
+                startApp();
+            } else {
+                alert("Yanlış şifre!");
+            }
+        }
+
+        function logout() {
+            location.reload();
+        }
+
+        function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            
+            document.getElementById('user-display').textContent = sessionUser.id.toUpperCase();
+            document.getElementById('welcome-name').textContent = sessionUser.id.toUpperCase();
+
+            if (sessionUser.role === 'admin') {
+                document.getElementById('admin-only-section').classList.remove('hidden');
+                loadUsersForAdmin();
+            }
+            loadStats();
+        }
+
+        // ============== ADD USER (SADECE ADMIN) ==============
+        window.addUser = async () => {
+            if (sessionUser.role !== 'admin') return alert("Bu işlem sadece yöneticiye açıktır.");
+
+            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
+            const p = document.getElementById('new-user-pass').value.trim();
+
+            if (!n || !p) return alert("Kullanıcı adı ve şifre zorunludur.");
+            if (n === 'admin') return alert("'admin' ismi kullanılamaz.");
+
+            try {
+                await setDoc(doc(db, 'users', n), { password: p, role: 'user' });
+                alert("✅ Yeni kullanıcı eklendi!");
+                document.getElementById('new-user-name').value = '';
+                document.getElementById('new-user-pass').value = '';
+                loadUsersForAdmin();
+            } catch (e) {
+                alert("Hata: " + e.message);
+            }
+        };
+
+        async function loadUsersForAdmin() {
+            const snap = await getDocs(collection(db, 'users'));
+            const container = document.getElementById('user-list-render');
+            container.innerHTML = '';
+
+            snap.forEach(docSnap => {
+                const data = docSnap.data();
+                const div = document.createElement('div');
+                div.className = "glass rounded-2xl p-5 flex justify-between items-center";
+                div.innerHTML = `
+                    <div>
+                        <p class="font-medium">${docSnap.id}</p>
+                        <p class="text-xs text-zinc-500">${data.role || 'user'}</p>
+                    </div>
+                    <p class="text-xs text-zinc-400">••••••</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        // ============== SAVE ENTRY ==============
+        window.saveEntry = async () => {
+            if (sessionUser.role === 'admin') return alert("Admin hesabı ile kayıt giremezsiniz.");
+
+            const date = document.getElementById('entry-date').value;
+            const risale = parseInt(document.getElementById('in-r').value) || 0;
+            const quran = parseInt(document.getElementById('in-q').value) || 0;
+
+            if (!date) return alert("Lütfen tarih seçin.");
+
+            try {
+                await setDoc(doc(db, 'users', sessionUser.id, 'data', date), {
+                    risale: risale,
+                    quran: quran,
+                    timestamp: new Date()
+                });
+                alert("✅ Kayıt başarıyla kaydedildi!");
+                nav('home');
+                loadStats();
+            } catch (e) {
+                alert("Kaydetme hatası: " + e.message);
+            }
+        };
+
+        // ============== LOAD STATS ==============
+        function loadStats() {
+            if (sessionUser.id === 'admin') return;
+
+            onSnapshot(collection(db, 'users', sessionUser.id, 'data'), (snap) => {
+                let totalRisale = 0, totalQuran = 0;
+
+                snap.forEach(d => {
+                    totalRisale += Number(d.data().risale || 0);
+                    totalQuran += Number(d.data().quran || 0);
+                });
+
+                document.getElementById('total-risale').textContent = totalRisale;
+                document.getElementById('total-quran').textContent = totalQuran;
+
+                // Basit progress (örnek: hedef 500 sayfa)
+                const totalPages = totalRisale + totalQuran;
+                const progress = Math.min(Math.round((totalPages / 1000) * 100), 100); // örnek hedef 1000 sayfa
+                const offset = 439.82 * (1 - progress / 100);
+                document.getElementById('progress-circle').setAttribute('stroke-dashoffset', offset);
+                document.getElementById('progress-percent').textContent = progress + '%';
+            });
+        }
+
+        window.nav = (page) => {
+            document.querySelectorAll('#page-home, #page-entry, #admin-only-section').forEach(el => el.classList.add('hidden'));
+            if (page === 'home') document.getElementById('page-home').classList.remove('hidden');
+            if (page === 'entry') document.getElementById('page-entry').classList.remove('hidden');
+        };
+
+        // Default date
+        document.getElementById('entry-date').valueAsDate = new Date();
+
+        // Tailwind script sonrası lucide ikonlar için (opsiyonel)
+        setTimeout(() => {
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }, 1000);
+    </script>
+</body>
+</html>                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box">
                         <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs tracking-widest">KULLANICIYI EKLE</button>
                     </div>
                     <div id="user-list-render" class="space-y-2"></div>
