@@ -1,3 +1,197 @@
+inc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest mb-1">Kur'an-ı Kerim</p>
+                            <p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span> <span class="text-[10px] opacity-20 text-white not-italic uppercase font-bold">sayfa</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-[#f5a623]/10 rounded-2xl flex items-center justify-center text-xl text-[#f5a623] shadow-inner">🕌</div>
+                    </div>
+                </div>
+
+                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-[#8bc34a] rounded-full animate-pulse"></span>
+                        <h3 class="text-xs font-black text-[#8bc34a] uppercase tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
+                    </div>
+                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4 border border-[#8bc34a]/20">
+                        <input type="text" id="new-user-name" placeholder="Kullanıcı Adı" class="input-box !py-3 !text-sm !rounded-xl">
+                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box !py-3 !text-sm !rounded-xl">
+                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs uppercase tracking-widest">KULLANICIYI SİSTEME EKLE</button>
+                    </div>
+                    <div id="user-list-render" class="space-y-2">
+                        </div>
+                </div>
+            </div>
+
+            <div id="page-entry" class="page hidden space-y-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">VERİ GİRİŞİ ✍️</h2>
+                    <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1">Bugünkü okumalarını işle</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="date" id="entry-date" class="input-box text-center font-bold tracking-tighter">
+                    <div class="relative">
+                        <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box pl-14 font-bold">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">📖</span>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box pl-14 font-bold text-[#f5a623]">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">🕌</span>
+                    </div>
+                    <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/30 mt-4">KAYDI TAMAMLA 🔥</button>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 glass safe-bottom border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
+            <button onclick="nav('home')" id="tab-home" class="flex flex-col items-center gap-1 opacity-100 transition-all active:scale-90">
+                <span class="text-2xl">📊</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">DURUM</span>
+            </button>
+            <button onclick="nav('entry')" id="tab-entry" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black font-black text-3xl active:scale-90 transition-all">+</button>
+            <button onclick="nav('home')" class="flex flex-col items-center gap-1 opacity-30 active:scale-90 transition-all">
+                <span class="text-2xl">🏆</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">SIRALAMA</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Senin Gönderdiğin Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
+            authDomain: "ferahev.firebaseapp.com",
+            projectId: "ferahev",
+            storageBucket: "ferahev.firebasestorage.app",
+            messagingSenderId: "937908607106",
+            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const appId = "default"; // Sabit Sistem ID
+
+        let sessionUser = null;
+
+        // --- GİRİŞ MANTIĞI ---
+        document.getElementById('btn-do-login').onclick = async () => {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+
+            if(!u || !p) return alert("Bilgileri gir kanka.");
+
+            const userRef = doc(db, 'artifacts', appId, 'users', u);
+            const snap = await getDoc(userRef);
+
+            if(snap.exists() && snap.data().password === p) {
+                sessionUser = { id: u, ...snap.data() };
+                startApp();
+            } else {
+                alert("Hatalı kullanıcı adı veya şifre!");
+            }
+        };
+
+        // --- ADMİN GİRİŞİ ---
+        document.getElementById('btn-admin-gate').onclick = () => {
+            const master = prompt("Admin Şifresini Gir:");
+            if(master === "ferah123") { // DEĞİŞTİREBİLİRSİN
+                sessionUser = { id: 'admin', role: 'admin' };
+                startApp();
+            }
+        };
+
+        function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
+            
+            if(sessionUser.role === 'admin') {
+                document.getElementById('admin-only-section').classList.remove('hidden');
+                document.getElementById('role-tag').innerText = "YÖNETİCİ";
+                loadUsersForAdmin();
+            }
+            loadStats();
+        }
+
+        // --- ADMİN: KULLANICI EKLEME ---
+        window.addUser = async () => {
+            const name = document.getElementById('new-user-name').value.trim().toLowerCase();
+            const pass = document.getElementById('new-user-pass').value;
+            if(!name || !pass) return alert("Eksik bilgi!");
+
+            await setDoc(doc(db, 'artifacts', appId, 'users', name), {
+                password: pass,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            });
+            alert(name + " başarıyla eklendi.");
+            loadUsersForAdmin();
+            document.getElementById('new-user-name').value = "";
+            document.getElementById('new-user-pass').value = "";
+        };
+
+        async function loadUsersForAdmin() {
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'users'));
+            const list = document.getElementById('user-list-render');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data();
+                list.innerHTML += `<div class="bg-zinc-900 p-4 rounded-2xl flex justify-between items-center border border-white/5">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black uppercase text-white">${d.id}</span>
+                        <span class="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Şifre: ${data.password}</span>
+                    </div>
+                    <span class="text-[10px] text-[#8bc34a] font-bold italic">AKTİF</span>
+                </div>`;
+            });
+        }
+
+        // --- VERİ KAYDI ---
+        window.saveEntry = async () => {
+            const date = document.getElementById('entry-date').value;
+            const r = document.getElementById('in-r').value || 0;
+            const q = document.getElementById('in-q').value || 0;
+            
+            if(!date) return alert("Tarih seçmelisin!");
+            if(sessionUser.id === 'admin') return alert("Admin olarak veri giremezsin, kullanıcı hesabı aç!");
+
+            await setDoc(doc(db, 'artifacts', appId, 'users', sessionUser.id, 'data', date), {
+                risale: r, quran: q, date: date, savedAt: new Date().toISOString()
+            });
+            alert("Harika! Veriler işlendi. 🔥");
+            nav('home');
+        };
+
+        function loadStats() {
+            if(sessionUser.id === 'admin') return;
+            const ref = collection(db, 'artifacts', appId, 'users', sessionUser.id, 'data');
+            onSnapshot(ref, snap => {
+                let tr = 0, tq = 0;
+                snap.forEach(d => { 
+                    tr += Number(d.data().risale || 0); 
+                    tq += Number(d.data().quran || 0); 
+                });
+                document.getElementById('val-risale').innerText = tr;
+                document.getElementById('val-quran').innerText = tq;
+            });
+        }
+
+        // Navigasyon
+        window.nav = (p) => {
+            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
+            document.getElementById('page-'+p).classList.remove('hidden');
+        };
+
+        window.logout = () => location.reload();
+        document.getElementById('entry-date').valueAsDate = new Date();
+
+    </script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -281,1250 +475,4 @@
         import { initializeApp }            from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, getDocFromServer,
                  collection, onSnapshot, getDocs, updateDoc, deleteDoc }
-                                            from "https://www.gstatic.        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toastMsg');
-            toast.textContent = msg || (isError ? "⚠️ Hata" : "✅ Başarılı");
-            toast.style.color = isError ? "#F87171" : "#F9B23F";
-            toast.classList.add('toast-show');
-            setTimeout(() => toast.classList.remove('toast-show'), 2000);
-        }
-
-        window.doLogin = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-            if (!u || !p) return showToast("Kullanıcı adı/şifre girin", true);
-            try {
-                const snap = await getDoc(doc(db, 'users', u));
-                if (snap.exists() && snap.data().password === p) {
-                    sessionUser = { id: u, ...snap.data(), role: snap.data().role || 'user' };
-                    startApp();
-                } else alert("Hatalı giriş bilgileri.");
-            } catch(e) { alert("Bağlantı hatası"); }
-        };
-
-        window.adminGate = () => {
-            console.log("Admin butonu çalıştı");
-            const pwd = prompt("👑 Yönetici Şifresi:");
-            if (pwd === "ferah123") {
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-                showToast("Admin paneline hoş geldiniz");
-            } else if(pwd) showToast("Yanlış şifre!", true);
-        };
-
-        async function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').textContent = sessionUser.id.toUpperCase();
-            document.getElementById('welcome-name').textContent = sessionUser.id.toUpperCase();
-            
-            if (sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                document.getElementById('admin-nav-btn').classList.remove('opacity-60');
-                loadUsersForAdmin();
-            } else {
-                document.getElementById('admin-only-section').classList.add('hidden');
-                document.getElementById('admin-nav-btn').classList.add('opacity-60');
-                loadUserGoal();
-            }
-            loadStats();
-            loadLeaderboard();
-        }
-
-        window.logout = () => { if(currentStatsListener) currentStatsListener(); location.reload(); };
-
-        window.addUser = async () => {
-            if (sessionUser.role !== 'admin') return showToast("Yetkisiz işlem", true);
-            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const p = document.getElementById('new-user-pass').value.trim();
-            if (!n || !p) return showToast("Doldur", true);
-            if (n === 'admin') return showToast("Admin ayrılmış", true);
-            await setDoc(doc(db, 'users', n), { password: p, role: 'user', dailyGoal: 20 });
-            showToast(`✅ ${n} eklendi`);
-            document.getElementById('new-user-name').value = '';
-            document.getElementById('new-user-pass').value = '';
-            loadUsersForAdmin();
-            loadLeaderboard();
-        };
-
-        async function loadUsersForAdmin() {
-            const snap = await getDocs(collection(db, 'users'));
-            const container = document.getElementById('user-list-render');
-            container.innerHTML = '';
-            for (const docSnap of snap.docs) {
-                const uid = docSnap.id;
-                const data = docSnap.data();
-                let total = 0;
-                const subSnap = await getDocs(collection(db, 'users', uid, 'data'));
-                subSnap.forEach(dd => { total += (dd.data().risale || 0) + (dd.data().quran || 0) + (dd.data().cevsen || 0); });
-                const div = document.createElement('div');
-                      box-shadow: 0 8px 20px -6px rgba(249, 178, 63, 0.4);
-        }
-        .animate-float {
-            animation: float 4s ease-in-out infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
-        }
-        .progress-ring__circle {
-            transition: stroke-dashoffset 0.5s ease;
-        }
-        .badge-gold {
-            background: linear-gradient(135deg, #f5a62320, #ff8c0020);
-            border-left: 3px solid #F9B23F;
-        }
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #1e1e2a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #F9B23F;
-            border-radius: 10px;
-        }
-        .toast-notify {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.9);
-            background: #1E1F2C;
-            backdrop-filter: blur(12px);
-            padding: 12px 24px;
-            border-radius: 60px;
-            border: 1px solid #F9B23F;
-            color: #F9B23F;
-            font-weight: 600;
-            z-index: 200;
-            opacity: 0;
-            transition: 0.2s;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-        .toast-show {
-            opacity: 1;
-            transform: translateX(-50%) scale(1);
-        }
-        .ripple {
-            position: relative;
-            overflow: hidden;
-        }
-        .ripple:after {
-            content: "";
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
-            background-repeat: no-repeat;
-            background-position: 50%;
-            transform: scale(10);
-            opacity: 0;
-            transition: transform .3s, opacity .5s;
-        }
-        .ripple:active:after {
-            transform: scale(0);
-            opacity: 0.3;
-            transition: 0s;
-        }
-    </style>
-</head>
-<body class="min-h-screen pb-28">
-
-    <!-- TOAST MESAJ -->
-    <div id="toastMsg" class="toast-notify">✨ Başarılı</div>
-
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 transition-all duration-500">
-        <div class="w-full max-w-md text-center animate-float">
-            <div class="mb-10">
-                <h1 class="logo-font text-7xl font-black tracking-tighter bg-gradient-to-r from-white via-amber-300 to-amber-500 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
-                <p class="text-[#8bc34a] text-xs font-bold tracking-[6px] mt-2">İSTANBUL · NUR VAKFI</p>
-            </div>
-            <div class="glass rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-500/30">
-                <input id="login-user" type="text" placeholder="KULLANICI ADI" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium uppercase tracking-wider">
-                <input id="login-pass" type="password" placeholder="ŞİFRE" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium">
-                <button onclick="doLogin()" class="gold-gradient w-full py-5 rounded-2xl font-extrabold text-xl text-black tracking-widest shadow-xl transition-all hover:shadow-2xl">GİRİŞ YAP</button>
-                <button id="admin-btn" class="w-full py-4 text-sm font-semibold text-zinc-400 hover:text-amber-400 transition-colors border border-dashed border-zinc-700 hover:border-amber-500 rounded-2xl mt-2">👑 Yönetici Erişimi</button>
-            </div>
-            <p class="text-[10px] text-zinc-500 mt-6">Manevi yolculuğunuzu takip edin</p>
-        </div>
-    </div>
-
-    <!-- MAIN APP -->
-    <div id="main-app" class="hidden">
-        <!-- Header -->
-        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-white/10 shadow-md">
-            <div>
-                <h1 class="logo-font text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-amber-400 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
-                <p id="role-tag" class="text-[9px] text-[#8bc34a] font-bold tracking-widest">RAHMET TAKİP</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="user-display" class="font-bold text-sm bg-zinc-800/60 px-3 py-1 rounded-full"></span>
-                <button onclick="logout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 border border-white/20 text-zinc-400 hover:text-amber-400 transition">✕</button>
-            </div>
-        </header>
-
-        <main class="p-5 space-y-6 overflow-y-auto" style="height: calc(100vh - 130px);">
-            <!-- ANA SAYFA -->
-            <div id="page-home" class="space-y-6">
-                <div class="text-center">
-                    <p class="text-zinc-400 text-sm tracking-wide">Hoş geldin,</p>
-                    <h2 id="welcome-name" class="text-3xl font-extrabold bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"></h2>
-                </div>
-
-                <!-- Kartlar -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass-card rounded-3xl p-5 text-center">
-                        <p class="text-xs font-bold text-zinc-400 tracking-wider">RİSALE-İ NUR</p>
-                        <p id="total-risale" class="text-5xl font-black mt-2 text-amber-300">0</p>
-                        <p class="text-[10px] text-zinc-500">toplam sayfa</p>
-                    </div>
-                    <div class="glass-card rounded-3xl p-5 text-center">
-                        <p class="text-xs font-bold text-zinc-400 tracking-wider">KUR'AN-I KERİM</p>
-                        <p id="total-quran" class="text-5xl font-black mt-2 text-emerald-400">0</p>
-                        <p class="text-[10px] text-zinc-500">toplam sayfa</p>
-                    </div>
-                </div>
-
-                <!-- Günlük Hedef Widget -->
-                <div class="glass rounded-3xl p-5 flex items-center justify-between">
-                    <div>
-                        <p class="text-xs uppercase tracking-wider text-amber-400 font-bold">🎯 Günlük Hedefim</p>
-                        <p class="text-2xl font-black mt-1"><span id="daily-goal-val">20</span> sayfa</p>
-                    </div>
-                    <button id="editGoalBtn" class="bg-zinc-800 px-5 py-2 rounded-full text-xs font-bold hover:bg-amber-500/20 transition">✎ Düzenle</button>
-                </div>
-
-                <!-- Bugünkü İlerleme + Başarı Rozetleri -->
-                <div class="glass rounded-3xl p-6 text-center">
-                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">🏆 1000 Sayfaya Giden Yol</p>
-                    <div class="flex justify-center">
-                        <svg width="160" height="160">
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="#2A2F3A" stroke-width="14"></circle>
-                            <circle id="progress-circle" cx="80" cy="80" r="70" fill="none" stroke="url(#goldGrad)" stroke-width="14" stroke-dasharray="439.82" stroke-dashoffset="439.82" stroke-linecap="round" transform="rotate(-90 80 80)"></circle>
-                            <defs>
-                                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#F9B23F"/>
-                                    <stop offset="100%" stop-color="#FFD166"/>
-                                </linearGradient>
-                            </defs>
-                        </svg>
-                    </div>
-                    <p id="progress-percent" class="text-3xl font-black mt-2 text-amber-400">0%</p>
-                    <p class="text-xs text-zinc-400">Hedef: 1000 sayfa</p>
-                </div>
-
-                <!-- Son 7 Gün Grafiği (Çizgi) -->
-                <div class="glass-card rounded-3xl p-4">
-                    <p class="text-xs font-bold text-zinc-400 mb-3 tracking-wider">📈 SON 7 GÜN AKTİVİTE</p>
-                    <canvas id="weeklyChart" height="150" class="w-full"></canvas>
-                </div>
-
-                <!-- Lider Tablosu (Herkes görebilir) -->
-                <div class="glass-card rounded-3xl p-5">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-xs font-bold text-amber-400 tracking-wider">🏅 EN ÇOK OKUYANLAR</p>
-                        <span class="text-[10px] text-zinc-500">Manevi Yarış</span>
-                    </div>
-                    <div id="leaderboard-list" class="space-y-2"></div>
-                </div>
-
-                <!-- Rozetlerim -->
-                <div id="badges-container" class="glass-card rounded-3xl p-5">
-                    <p class="text-xs font-bold text-zinc-400 mb-3">🎖️ BAŞARI ROZETLERİM</p>
-                    <div id="badges-list" class="flex flex-wrap gap-2"></div>
-                </div>
-
-                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-extrabold text-xl rounded-3xl flex items-center justify-center gap-3 shadow-2xl btn-glow ripple mt-4">
-                    ✨ Yeni Kayıt Ekle <span class="text-3xl">+</span>
-                </button>
-            </div>
-
-            <!-- KAYIT SAYFASI -->
-            <div id="page-entry" class="hidden space-y-6">
-                <div class="glass rounded-3xl p-7">
-                    <h3 class="text-xl font-bold text-center text-amber-300 mb-6">📖 Bugünkü İbadet Kaydı</h3>
-                    <input id="entry-date" type="date" class="input-modern w-full px-6 py-4 rounded-2xl text-center mb-6 font-medium">
-                    
-                    <!-- Hızlı Ekleme Butonları -->
-                    <div class="flex gap-3 mb-6 justify-center">
-                        <button type="button" onclick="quickAdd('risale', 10)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+10 Risale</button>
-                        <button type="button" onclick="quickAdd('risale', 25)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+25 Risale</button>
-                        <button type="button" onclick="quickAdd('quran', 5)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+5 Kur'an</button>
-                        <button type="button" onclick="quickAdd('quran', 10)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+10 Kur'an</button>
-                    </div>
-
-                    <div class="space-y-5">
-                        <div>
-                            <label class="block text-xs text-amber-400 font-bold mb-2">📘 Risale-i Nur Sayfa</label>
-                            <input id="in-r" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-emerald-400 font-bold mb-2">🕋 Kur'an-ı Kerim Sayfa</label>
-                            <input id="in-q" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold text-emerald-300">
-                        </div>
-                    </div>
-                </div>
-                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl shadow-xl">💾 KAYDI TAMAMLA</button>
-                <button onclick="nav('home')" class="w-full py-4 text-zinc-400 text-sm">← Geri Dön</button>
-            </div>
-
-            <!-- YÖNETİCİ PANELİ -->
-            <div id="admin-only-section" class="hidden space-y-6">
-                <h3 class="uppercase text-xs tracking-[3px] text-emerald-400 font-bold">Yönetici Kontrolü</h3>
-                <div class="glass rounded-3xl p-6 space-y-5">
-                    <input id="new-user-name" type="text" placeholder="Yeni Kullanıcı Adı (küçük harf)" class="input-modern w-full px-5 py-4 rounded-2xl">
-                    <input id="new-user-pass" type="text" placeholder="Şifre" class="input-modern w-full px-5 py-4 rounded-2xl">
-                    <button onclick="addUser()" class="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg">➕ Kullanıcı Ekle</button>
-                </div>
-                <div>
-                    <p class="text-xs text-zinc-400 mb-3 font-bold">📋 Kayıtlı Kullanıcılar & Toplam Sayfaları</p>
-                    <div id="user-list-render" class="space-y-3 max-h-96 overflow-y-auto"></div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Nav -->
-        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-6 py-3 flex justify-around items-center z-50 backdrop-blur-2xl">
-            <button onclick="nav('home')" class="flex flex-col items-center text-amber-400 transition">
-                <span class="text-2xl">📊</span>
-                <span class="text-[10px] font-bold mt-1">Dashboard</span>
-            </button>
-            <button onclick="nav('entry')" class="w-14 h-14 -mt-8 gold-gradient rounded-full flex items-center justify-center text-3xl text-black shadow-2xl ring-4 ring-black/50 transition hover:scale-105">✚</button>
-            <button id="admin-nav-btn" class="flex flex-col items-center opacity-60 transition">
-                <span class="text-2xl">⚙️</span>
-                <span class="text-[10px] font-bold mt-1">Admin</span>
-            </button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let sessionUser = null;
-        let weeklyChartInstance = null;
-        let currentStatsListener = null;
-
-        function showToast(msg, isError = false) {
-            const toast = document.getElementById('toastMsg');
-            toast.textContent = msg || (isError ? "⚠️ Hata" : "✅ Başarılı");
-            toast.style.color = isError ? "#F87171" : "#F9B23F";
-            toast.classList.add('toast-show');
-            setTimeout(() => toast.classList.remove('toast-show'), 2000);
-        }
-
-        window.doLogin = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-            if (!u || !p) return showToast("Kullanıcı adı/şifre girin", true);
-            try {
-                const snap = await getDoc(doc(db, 'users', u));
-                if (snap.exists() && snap.data().password === p) {
-                    sessionUser = { id: u, ...snap.data(), role: snap.data().role || 'user' };
-                    startApp();
-                } else alert("Hatalı giriş bilgileri.");
-            } catch(e) { alert("Bağlantı hatası"); }
-        };
-
-        window.adminGate = () => {
-            const pwd = prompt("👑 Yönetici Şifresi:");
-            if (pwd === "ferah123") {
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            } else if(pwd) showToast("Yanlış şifre!", true);
-        };
-
-        async function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').textContent = sessionUser.id.toUpperCase();
-            document.getElementById('welcome-name').textContent = sessionUser.id.toUpperCase();
-            
-            if (sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                document.getElementById('admin-nav-btn').classList.remove('opacity-60');
-                loadUsersForAdmin();
-            } else {
-                document.getElementById('admin-only-section').classList.add('hidden');
-                document.getElementById('admin-nav-btn').classList.add('opacity-60');
-                loadUserGoal();
-            }
-            loadStats();
-            loadLeaderboard();
-            renderBadges(0);
-        }
-
-        window.logout = () => { if(currentStatsListener) currentStatsListener(); location.reload(); };
-
-        window.addUser = async () => {
-            if (sessionUser.role !== 'admin') return showToast("Yetkisiz işlem", true);
-            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const p = document.getElementById('new-user-pass').value.trim();
-            if             box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
-        }
-        .card-hover:hover { transform: translateY(-4px); }
-        .progress-ring {
-            transition: stroke-dashoffset 0.5s ease;
-        }
-    </style>
-</head>
-<body class="min-h-screen pb-24">
-
-    <!-- Login Screen -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-black flex items-center justify-center p-6">
-        <div class="w-full max-w-md text-center">
-            <div class="mb-10">
-                <h1 class="logo-font text-6xl font-black tracking-tighter text-white">FERAH<span class="gold-gradient bg-clip-text text-transparent">EV</span></h1>
-                <p class="text-[#8bc34a] text-sm font-medium tracking-[4px] mt-2">İSTANBUL</p>
-            </div>
-            
-            <div class="glass rounded-3xl p-8 space-y-6">
-                <input id="login-user" type="text" placeholder="Kullanıcı Adı" class="input w-full px-6 py-5 rounded-2xl text-center text-lg font-medium uppercase">
-                <input id="login-pass" type="password" placeholder="Şifre" class="input w-full px-6 py-5 rounded-2xl text-center text-lg font-medium">
-                
-                <button onclick="doLogin()" class="gold-gradient w-full py-5 rounded-2xl font-bold text-xl text-black tracking-widest shadow-xl">GİRİŞ YAP</button>
-                
-                <button onclick="adminGate()" class="text-xs text-zinc-500 hover:text-zinc-400 transition-colors">Yönetici Erişimi</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main App -->
-    <div id="main-app" class="hidden">
-        <!-- Header -->
-        <header class="glass sticky top-0 z-40 px-6 py-5 flex items-center justify-between border-b border-white/10">
-            <div>
-                <h1 class="logo-font text-2xl font-black tracking-tighter">FERAH<span class="text-[#f5a623]">EV</span></h1>
-                <p id="role-tag" class="text-[10px] text-[#8bc34a] font-medium tracking-widest">İSTANBUL</p>
-            </div>
-            <div class="flex items-center gap-3">
-                <span id="user-display" class="font-medium text-sm"></span>
-                <button onclick="logout()" class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-900 border border-white/10 text-zinc-400 hover:text-white">✕</button>
-            </div>
-        </header>
-
-        <main class="p-6 space-y-8 overflow-y-auto" style="height: calc(100vh - 140px);">
-
-            <!-- Dashboard (Home) -->
-            <div id="page-home" class="space-y-8">
-                <div class="text-center">
-                    <p class="text-zinc-400 text-sm">Hoş geldin,</p>
-                    <h2 id="welcome-name" class="text-3xl font-bold mt-1"></h2>
-                </div>
-
-                <!-- Progress Cards -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="glass rounded-3xl p-6 card-hover">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs tracking-widest text-zinc-500">RİSALE-İ NUR</p>
-                                <p id="total-risale" class="text-5xl font-black mt-3">0</p>
-                            </div>
-                            <div class="text-4xl">📖</div>
-                        </div>
-                    </div>
-                    <div class="glass rounded-3xl p-6 card-hover">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xs tracking-widest text-[#f5a623]">KUR'AN-I KERİM</p>
-                                <p id="total-quran" class="text-5xl font-black mt-3 text-[#f5a623]">0</p>
-                            </div>
-                            <div class="text-4xl">🕌</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Weekly Progress -->
-                <div class="glass rounded-3xl p-7">
-                    <p class="text-xs uppercase tracking-widest text-zinc-500 mb-4">Bu Hafta İlerleme</p>
-                    <div class="flex justify-center">
-                        <svg id="progress-svg" width="160" height="160" class="relative">
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="#222" stroke-width="14"></circle>
-                            <circle id="progress-circle" cx="80" cy="80" r="70" fill="none" stroke="#f5a623" stroke-width="14" stroke-dasharray="439.82" stroke-dashoffset="439.82" stroke-linecap="round" transform="rotate(-90 80 80)"></circle>
-                        </svg>
-                    </div>
-                    <p id="progress-percent" class="text-center text-2xl font-bold mt-4">0%</p>
-                </div>
-
-                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl flex items-center justify-center gap-3 shadow-2xl">
-                    <span>Yeni Kayıt Ekle</span>
-                    <span class="text-3xl">+</span>
-                </button>
-            </div>
-
-            <!-- Entry Page -->
-            <div id="page-entry" class="hidden space-y-8">
-                <div class="glass rounded-3xl p-8">
-                    <h3 class="text-lg font-semibold mb-6 text-center">Bugünkü İbadet Kaydı</h3>
-                    <input id="entry-date" type="date" class="input w-full px-6 py-5 rounded-2xl text-center mb-6">
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <label class="block text-xs text-zinc-500 mb-2">Risale-i Nur Sayfa Sayısı</label>
-                            <input id="in-r" type="number" placeholder="0" class="input w-full px-6 py-5 rounded-2xl text-3xl text-center">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-zinc-500 mb-2">Kur'an-ı Kerim Sayfa Sayısı</label>
-                            <input id="in-q" type="number" placeholder="0" class="input w-full px-6 py-5 rounded-2xl text-3xl text-center text-[#f5a623]">
-                        </div>
-                    </div>
-                </div>
-
-                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl">KAYDI TAMAMLA</button>
-            </div>
-
-            <!-- Admin Panel -->
-            <div id="admin-only-section" class="hidden space-y-8">
-                <h3 class="uppercase text-xs tracking-[2px] text-[#8bc34a] font-bold">Yönetici Paneli</h3>
-                
-                <div class="glass rounded-3xl p-7 space-y-6">
-                    <input id="new-user-name" type="text" placeholder="Yeni Kullanıcı Adı (küçük harf)" class="input w-full px-6 py-5 rounded-2xl">
-                    <input id="new-user-pass" type="text" placeholder="Şifre" class="input w-full px-6 py-5 rounded-2xl">
-                    <button onclick="addUser()" class="w-full py-5 bg-[#8bc34a] text-black font-bold rounded-2xl">KULLANICI EKLE</button>
-                </div>
-
-                <div>
-                    <p class="text-xs text-zinc-500 mb-3">Kayıtlı Kullanıcılar</p>
-                    <div id="user-list-render" class="space-y-3"></div>
-                </div>
-            </div>
-        </main>
-
-        <!-- Bottom Navigation -->
-        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-8 py-4 flex justify-around items-center z-50">
-            <button onclick="nav('home')" class="flex flex-col items-center text-[#f5a623]">
-                <span class="text-2xl">📊</span>
-                <span class="text-[10px] mt-1">Ana Sayfa</span>
-            </button>
-            <button onclick="nav('entry')" class="w-16 h-16 -mt-10 gold-gradient rounded-full flex items-center justify-center text-4xl text-black shadow-2xl ring-8 ring-black">✚</button>
-            <button onclick="nav('home')" class="flex flex-col items-center opacity-50">
-                <span class="text-2xl">🏆</span>
-                <span class="text-[10px] mt-1">Başarılar</span>
-            </button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let sessionUser = null;
-
-        // ============== LOGIN ==============
-        async function doLogin() {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-            if (!u || !p) return alert("Kullanıcı adı ve şifre giriniz.");
-
-            try {
-                const snap = await getDoc(doc(db, 'users', u));
-                if (snap.exists() && snap.data().password === p) {
-                    sessionUser = { id: u, ...snap.data() };
-                    startApp();
-                } else {
-                    alert("Hatalı giriş bilgileri.");
-                }
-            } catch (e) {
-                alert("Bağlantı hatası: " + e.message);
-            }
-        }
-
-        function adminGate() {
-            if (prompt("Yönetici şifresi:") === "ferah123") {
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            } else {
-                alert("Yanlış şifre!");
-            }
-        }
-
-        function logout() {
-            location.reload();
-        }
-
-        function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            
-            document.getElementById('user-display').textContent = sessionUser.id.toUpperCase();
-            document.getElementById('welcome-name').textContent = sessionUser.id.toUpperCase();
-
-            if (sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                loadUsersForAdmin();
-            }
-            loadStats();
-        }
-
-        // ============== ADD USER (SADECE ADMIN) ==============
-        window.addUser = async () => {
-            if (sessionUser.role !== 'admin') return alert("Bu işlem sadece yöneticiye açıktır.");
-
-            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const p = document.getElementById('new-user-pass').value.trim();
-
-            if (!n || !p) return alert("Kullanıcı adı ve şifre zorunludur.");
-            if (n === 'admin') return alert("'admin' ismi kullanılamaz.");
-
-            try {
-                await setDoc(doc(db, 'users', n), { password: p, role: 'user' });
-                alert("✅ Yeni kullanıcı eklendi!");
-                document.getElementById('new-user-name').value = '';
-                document.getElementById('new-user-pass').value = '';
-                loadUsersForAdmin();
-            } catch (e) {
-                alert("Hata: " + e.message);
-            }
-        };
-
-        async function loadUsersForAdmin() {
-            const snap = await getDocs(collection(db, 'users'));
-            const container = document.getElementById('user-list-render');
-            container.innerHTML = '';
-
-            snap.forEach(docSnap => {
-                const data = docSnap.data();
-                const div = document.createElement('div');
-                div.className = "glass rounded-2xl p-5 flex justify-between items-center";
-                div.innerHTML = `
-                    <div>
-                        <p class="font-medium">${docSnap.id}</p>
-                        <p class="text-xs text-zinc-500">${data.role || 'user'}</p>
-                    </div>
-                    <p class="text-xs text-zinc-400">••••••</p>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        // ============== SAVE ENTRY ==============
-        window.saveEntry = async () => {
-            if (sessionUser.role === 'admin') return alert("Admin hesabı ile kayıt giremezsiniz.");
-
-            const date = document.getElementById('entry-date').value;
-            const risale = parseInt(document.getElementById('in-r').value) || 0;
-            const quran = parseInt(document.getElementById('in-q').value) || 0;
-
-            if (!date) return alert("Lütfen tarih seçin.");
-
-            try {
-                await setDoc(doc(db, 'users', sessionUser.id, 'data', date), {
-                    risale: risale,
-                    quran: quran,
-                    timestamp: new Date()
-                });
-                alert("✅ Kayıt başarıyla kaydedildi!");
-                nav('home');
-                loadStats();
-            } catch (e) {
-                alert("Kaydetme hatası: " + e.message);
-            }
-        };
-
-        // ============== LOAD STATS ==============
-        function loadStats() {
-            if (sessionUser.id === 'admin') return;
-
-            onSnapshot(collection(db, 'users', sessionUser.id, 'data'), (snap) => {
-                let totalRisale = 0, totalQuran = 0;
-
-                snap.forEach(d => {
-                    totalRisale += Number(d.data().risale || 0);
-                    totalQuran += Number(d.data().quran || 0);
-                });
-
-                document.getElementById('total-risale').textContent = totalRisale;
-                document.getElementById('total-quran').textContent = totalQuran;
-
-                // Basit progress (örnek: hedef 500 sayfa)
-                const totalPages = totalRisale + totalQuran;
-                const progress = Math.min(Math.round((totalPages / 1000) * 100), 100); // örnek hedef 1000 sayfa
-                const offset = 439.82 * (1 - progress / 100);
-                document.getElementById('progress-circle').setAttribute('stroke-dashoffset', offset);
-                document.getElementById('progress-percent').textContent = progress + '%';
-            });
-        }
-
-        window.nav = (page) => {
-            document.querySelectorAll('#page-home, #page-entry, #admin-only-section').forEach(el => el.classList.add('hidden'));
-            if (page === 'home') document.getElementById('page-home').classList.remove('hidden');
-            if (page === 'entry') document.getElementById('page-entry').classList.remove('hidden');
-        };
-
-        // Default date
-        document.getElementById('entry-date').valueAsDate = new Date();
-
-        // Tailwind script sonrası lucide ikonlar için (opsiyonel)
-        setTimeout(() => {
-            if (typeof lucide !== 'undefined') lucide.createIcons();
-        }, 1000);
-    </script>
-</body>
-</html>                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box">
-                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs tracking-widest">KULLANICIYI EKLE</button>
-                    </div>
-                    <div id="user-list-render" class="space-y-2"></div>
-                </div>
-            </div>
-
-            <div id="page-entry" class="page hidden space-y-8">
-                <input type="date" id="entry-date" class="input-box text-center font-bold">
-                <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box">
-                <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box text-[#f5a623]">
-                <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase">KAYDI TAMAMLA 🔥</button>
-            </div>
-        </main>
-
-        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
-            <button onclick="nav('home')" class="text-2xl">📊</button>
-            <button onclick="nav('entry')" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black text-3xl font-black">+</button>
-            <button onclick="nav('home')" class="text-2xl opacity-30">🏆</button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let sessionUser = null;
-
-        // ====================== GİRİŞ ======================
-        document.getElementById('btn-do-login').onclick = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-            if(!u || !p) return alert("Kullanıcı adı ve şifre girin!");
-
-            try {
-                const snap = await getDoc(doc(db, 'users', u));
-                if(snap.exists() && snap.data().password === p) {
-                    sessionUser = { id: u, ...snap.data() };
-                    startApp();
-                } else {
-                    alert("Hatalı kullanıcı adı veya şifre!");
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Bağlantı hatası: " + e.message);
-            }
-        };
-
-        // Admin Gate
-        document.getElementById('btn-admin-gate').onclick = () => {
-            if(prompt("Yönetici Şifresi:") === "ferah123") {
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            } else {
-                alert("Yanlış yönetici şifresi!");
-            }
-        };
-
-        function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
-
-            if(sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                loadUsersForAdmin();
-            }
-            loadStats();
-        }
-
-        // ====================== YENİ KULLANICI EKLE (SADECE ADMIN) ======================
-        window.addUser = async () => {
-            if (sessionUser.role !== 'admin') {
-                return alert("Bu işlemi sadece yönetici yapabilir! ❌");
-            }
-
-            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const p = document.getElementById('new-user-pass').value.trim();
-
-            if (!n || !p) {
-                return alert("Kullanıcı adı ve şifre boş olamaz!");
-            }
-            if (n === 'admin') {
-                return alert("'admin' ismi kullanılamaz!");
-            }
-
-            try {
-                await setDoc(doc(db, 'users', n), { 
-                    password: p, 
-                    role: 'user' 
-                });
-                
-                alert("✅ Yeni kullanıcı başarıyla eklendi!");
-                loadUsersForAdmin();   // Listeyi yenile
-                
-                // Inputları temizle
-                document.getElementById('new-user-name').value = "";
-                document.getElementById('new-user-pass').value = "";
-                
-            } catch (e) {
-                console.error("Kullanıcı ekleme hatası:", e);
-                alert("Hata: " + e.message);
-            }
-        };
-
-        // Kullanıcı Listesini Yükle
-        async function loadUsersForAdmin() {
-            if (sessionUser.role !== 'admin') return;
-
-            try {
-                const snap = await getDocs(collection(db, 'users'));
-                const list = document.getElementById('user-list-render');
-                list.innerHTML = '<p class="text-xs text-zinc-500 mb-2">Kayıtlı Kullanıcılar:</p>';
-
-                snap.forEach(d => {
-                    const data = d.data();
-                    list.innerHTML += `
-                        <div class="bg-zinc-900 p-4 rounded-xl flex justify-between items-center text-sm border border-white/5">
-                            <span class="font-bold uppercase">${d.id}</span>
-                            <span class="text-zinc-500 text-xs">${data.role || 'user'}</span>
-                        </div>`;
-                });
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        // ====================== KAYIT KAYDET ======================
-        window.saveEntry = async () => {
-            if (sessionUser.id === 'admin') {
-                return alert("Admin hesabı ile kayıt giremezsiniz!");
-            }
-
-            const d = document.getElementById('entry-date').value;
-            const r = parseInt(document.getElementById('in-r').value) || 0;
-            const q = parseInt(document.getElementById('in-q').value) || 0;
-
-            if(!d) return alert("Tarih seçin!");
-
-            try {
-                await setDoc(doc(db, 'users', sessionUser.id, 'data', d), { 
-                    risale: r, 
-                    quran: q 
-                });
-                alert("✅ Kayıt başarıyla tamamlandı!");
-                nav('home');
-            } catch (e) {
-                alert("Kayıt hatası: " + e.message);
-            }
-        };
-
-        function loadStats() {
-            if(sessionUser.id === 'admin') return;
-
-            onSnapshot(collection(db, 'users', sessionUser.id, 'data'), snap => {
-                let r = 0, q = 0;
-                snap.forEach(d => {
-                    r += Number(d.data().risale || 0);
-                    q += Number(d.data().quran || 0);
-                });
-                document.getElementById('val-risale').innerText = r;
-                document.getElementById('val-quran').innerText = q;
-            });
-        }
-
-        window.nav = (p) => {
-            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
-            document.getElementById('page-' + p).classList.remove('hidden');
-        };
-
-        // Varsayılan tarih
-        document.getElementById('entry-date').valueAsDate = new Date();
-    </script>
-</body>
-</html>        <header class="sticky top-0 z-50 glass border-b border-white/5 px-6 py-5 flex justify-between items-center">
-            <div class="flex flex-col">
-                <span class="font-logo font-black text-xl tracking-tighter italic">FERAH<span class="text-[#f5a623]">EV</span></span>
-                <span id="role-tag" class="text-[8px] text-[#8bc34a] font-bold tracking-[0.2em] uppercase">İstanbul</span>
-            </div>
-            <button onclick="location.reload()" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-500">ÇIK</button>
-        </header>
-
-        <main class="flex-1 pb-32 p-6 overflow-y-auto">
-            <div id="page-home" class="page space-y-6">
-                <h2 class="text-2xl font-black italic uppercase tracking-tighter">Selam, <span id="user-display" class="text-zinc-500">...</span></h2>
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div><p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Risale-i Nur</p><p class="text-4xl font-black italic"><span id="val-risale">0</span></p></div>
-                        <div class="text-2xl">📖</div>
-                    </div>
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div><p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest">Kur'an-ı Kerim</p><p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span></p></div>
-                        <div class="text-2xl">🕌</div>
-                    </div>
-                </div>
-
-                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
-                    <h3 class="text-xs font-black text-[#8bc34a] tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
-                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4">
-                        <input type="text" id="new-user-name" placeholder="Yeni Kullanıcı" class="input-box">
-                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box">
-                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs">KULLANICIYI EKLE</button>
-                    </div>
-                    <div id="user-list-render" class="space-y-2"></div>
-                </div>
-            </div>
-
-            <div id="page-entry" class="page hidden space-y-8">
-                <input type="date" id="entry-date" class="input-box text-center font-bold">
-                <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box">
-                <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box text-[#f5a623]">
-                <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase">KAYDI TAMAMLA 🔥</button>
-            </div>
-        </main>
-
-        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
-            <button onclick="nav('home')" class="text-2xl">📊</button>
-            <button onclick="nav('entry')" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black text-3xl font-black">+</button>
-            <button onclick="nav('home')" class="text-2xl opacity-30">🏆</button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // SENİN DOĞRULANMIŞ BİLGİLERİN
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let sessionUser = null;
-
-        // GİRİŞ
-        document.getElementById('btn-do-login').onclick = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-            if(!u || !p) return;
-            try {
-                const snap = await getDoc(doc(db, 'users', u));
-                if(snap.exists() && snap.data().password === p) {
-                    sessionUser = { id: u, ...snap.data() };
-                    startApp();
-                } else { alert("Hatalı Giriş!"); }
-            } catch (e) { alert("Hata: " + e.message); }
-        };
-
-        // ADMİN GİRİŞİ
-        document.getElementById('btn-admin-gate').onclick = () => {
-            if(prompt("Şifre:") === "ferah123") {
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            }
-        };
-
-        function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
-            if(sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                loadUsersForAdmin();
-            }
-            loadStats();
-        }
-
-        // KULLANICI EKLE
-        window.addUser = async () => {
-            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const p = document.getElementById('new-user-pass').value;
-            if(!n || !p) return;
-            try {
-                await setDoc(doc(db, 'users', n), { password: p, role: 'user' });
-                alert("Başarılı!");
-                loadUsersForAdmin();
-            } catch (e) { alert("Hata: " + e.message); }
-        };
-
-        async function loadUsersForAdmin() {
-            const snap = await getDocs(collection(db, 'users'));
-            const list = document.getElementById('user-list-render');
-            list.innerHTML = "";
-            snap.forEach(d => {
-                list.innerHTML += `<div class="bg-zinc-900 p-4 rounded-xl flex justify-between uppercase text-[10px] font-bold border border-white/5">
-                    <span>${d.id}</span><span class="text-zinc-500">${d.data().password}</span>
-                </div>`;
-            });
-        }
-
-        // VERİ KAYDET
-        window.saveEntry = async () => {
-            const d = document.getElementById('entry-date').value;
-            const r = document.getElementById('in-r').value || 0;
-            const q = document.getElementById('in-q').value || 0;
-            if(!d || sessionUser.id === 'admin') return alert("Tarih seç veya kullanıcıyla gir!");
-            try {
-                await setDoc(doc(db, 'users', sessionUser.id, 'data', d), { risale: r, quran: q });
-                alert("Kaydedildi!");
-                nav('home');
-            } catch (e) { alert(e.message); }
-        };
-
-        function loadStats() {
-            if(sessionUser.id === 'admin') return;
-            onSnapshot(collection(db, 'users', sessionUser.id, 'data'), snap => {
-                let r = 0, q = 0;
-                snap.forEach(d => { r += Number(d.data().risale || 0); q += Number(d.data().quran || 0); });
-                document.getElementById('val-risale').innerText = r;
-                document.getElementById('val-quran').innerText = q;
-            });
-        }
-
-        window.nav = (p) => {
-            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
-            document.getElementById('page-'+p).classList.remove('hidden');
-        };
-        document.getElementById('entry-date').valueAsDate = new Date();
-    </script>
-</body>
-</html>
-                <div class="grid grid-cols-1 gap-4">
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div>
-                            <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Risale-i Nur</p>
-                            <p class="text-4xl font-black italic"><span id="val-risale">0</span> <span class="text-[10px] opacity-20 not-italic uppercase font-bold">sayfa</span></p>
-                        </div>
-                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-xl shadow-inner">📖</div>
-                    </div>
-                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div>
-                            <p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest mb-1">Kur'an-ı Kerim</p>
-                            <p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span> <span class="text-[10px] opacity-20 text-white not-italic uppercase font-bold">sayfa</span></p>
-                        </div>
-                        <div class="w-12 h-12 bg-[#f5a623]/10 rounded-2xl flex items-center justify-center text-xl text-[#f5a623] shadow-inner">🕌</div>
-                    </div>
-                </div>
-
-                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 bg-[#8bc34a] rounded-full animate-pulse"></span>
-                        <h3 class="text-xs font-black text-[#8bc34a] uppercase tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
-                    </div>
-                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4 border border-[#8bc34a]/20">
-                        <input type="text" id="new-user-name" placeholder="Kullanıcı Adı" class="input-box !py-3 !text-sm !rounded-xl">
-                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box !py-3 !text-sm !rounded-xl">
-                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs uppercase tracking-widest">KULLANICIYI SİSTEME EKLE</button>
-                    </div>
-                    <div id="user-list-render" class="space-y-2">
-                        </div>
-                </div>
-            </div>
-
-            <div id="page-entry" class="page hidden space-y-8">
-                <div class="text-center">
-                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">VERİ GİRİŞİ ✍️</h2>
-                    <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1">Bugünkü okumalarını işle</p>
-                </div>
-                <div class="space-y-4">
-                    <input type="date" id="entry-date" class="input-box text-center font-bold tracking-tighter">
-                    <div class="relative">
-                        <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box pl-14 font-bold">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">📖</span>
-                    </div>
-                    <div class="relative">
-                        <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box pl-14 font-bold text-[#f5a623]">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">🕌</span>
-                    </div>
-                    <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/30 mt-4">KAYDI TAMAMLA 🔥</button>
-                </div>
-            </div>
-
-        </main>
-
-        <nav class="fixed bottom-0 left-0 right-0 glass safe-bottom border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
-            <button onclick="nav('home')" id="tab-home" class="flex flex-col items-center gap-1 opacity-100 transition-all active:scale-90">
-                <span class="text-2xl">📊</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">DURUM</span>
-            </button>
-            <button onclick="nav('entry')" id="tab-entry" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black font-black text-3xl active:scale-90 transition-all">+</button>
-            <button onclick="nav('home')" class="flex flex-col items-center gap-1 opacity-30 active:scale-90 transition-all">
-                <span class="text-2xl">🏆</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">SIRALAMA</span>
-            </button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Senin Gönderdiğin Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const appId = "default"; // Sabit Sistem ID
-
-        let sessionUser = null;
-
-        // --- GİRİŞ MANTIĞI ---
-        document.getElementById('btn-do-login').onclick = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-
-            if(!u || !p) return alert("Bilgileri gir kanka.");
-
-            const userRef = doc(db, 'artifacts', appId, 'users', u);
-            const snap = await getDoc(userRef);
-
-            if(snap.exists() && snap.data().password === p) {
-                sessionUser = { id: u, ...snap.data() };
-                startApp();
-            } else {
-                alert("Hatalı kullanıcı adı veya şifre!");
-            }
-        };
-
-        // --- ADMİN GİRİŞİ ---
-        document.getElementById('btn-admin-gate').onclick = () => {
-            const master = prompt("Admin Şifresini Gir:");
-            if(master === "ferah123") { // DEĞİŞTİREBİLİRSİN
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            }
-        };
-
-        function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
-            
-            if(sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                document.getElementById('role-tag').innerText = "YÖNETİCİ";
-                loadUsersForAdmin();
-            }
-            loadStats();
-        }
-
-        // --- ADMİN: KULLANICI EKLEME ---
-        window.addUser = async () => {
-            const name = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const pass = document.getElementById('new-user-pass').value;
-            if(!name || !pass) return alert("Eksik bilgi!");
-
-            await setDoc(doc(db, 'artifacts', appId, 'users', name), {
-                password: pass,
-                role: 'user',
-                createdAt: new Date().toISOString()
-            });
-            alert(name + " başarıyla eklendi.");
-            loadUsersForAdmin();
-            document.getElementById('new-user-name').value = "";
-            document.getElementById('new-user-pass').value = "";
-        };
-
-        async function loadUsersForAdmin() {
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'users'));
-            const list = document.getElementById('user-list-render');
-            list.innerHTML = "";
-            snap.forEach(d => {
-                const data = d.data();
-                list.innerHTML += `<div class="bg-zinc-900 p-4 rounded-2xl flex justify-between items-center border border-white/5">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-black uppercase text-white">${d.id}</span>
-                        <span class="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Şifre: ${data.password}</span>
-                    </div>
-                    <span class="text-[10px] text-[#8bc34a] font-bold italic">AKTİF</span>
-                </div>`;
-            });
-        }
-
-        // --- VERİ KAYDI ---
-        window.saveEntry = async () => {
-            const date = document.getElementById('entry-date').value;
-            const r = document.getElementById('in-r').value || 0;
-            const q = document.getElementById('in-q').value || 0;
-            
-            if(!date) return alert("Tarih seçmelisin!");
-            if(sessionUser.id === 'admin') return alert("Admin olarak veri giremezsin, kullanıcı hesabı aç!");
-
-            await setDoc(doc(db, 'artifacts', appId, 'users', sessionUser.id, 'data', date), {
-                risale: r, quran: q, date: date, savedAt: new Date().toISOString()
-            });
-            alert("Harika! Veriler işlendi. 🔥");
-            nav('home');
-        };
-
-        function loadStats() {
-            if(sessionUser.id === 'admin') return;
-            const ref = collection(db, 'artifacts', appId, 'users', sessionUser.id, 'data');
-            onSnapshot(ref, snap => {
-                let tr = 0, tq = 0;
-                snap.forEach(d => { 
-                    tr += Number(d.data().risale || 0); 
-                    tq += Number(d.data().quran || 0); 
-                });
-                document.getElementById('val-risale').innerText = tr;
-                document.getElementById('val-quran').innerText = tq;
-            });
-        }
-
-        // Navigasyon
-        window.nav = (p) => {
-            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
-            document.getElementById('page-'+p).classList.remove('hidden');
-        };
-
-        window.logout = () => location.reload();
-        document.getElementById('entry-date').valueAsDate = new Date();
-
-    </script>
-</body>
-</html>
-
+                                            from "https://www.gstatic.
