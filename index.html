@@ -1,0 +1,265 @@
+html
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ferah EV | İstanbul</title>
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        :root { --gold: #f5a623; --green: #8bc34a; --dark: #000000; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--dark); color: white; overscroll-behavior-y: contain; -webkit-tap-highlight-color: transparent; }
+        .font-logo { font-family: 'Montserrat', sans-serif; }
+        .gold-gradient { background: linear-gradient(135deg, #f5a623 0%, #ff8c00 100%); }
+        .glass { background: rgba(15, 15, 15, 0.9); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); }
+        .input-box { background: #111; border: 1px solid #222; border-radius: 1rem; padding: 1.2rem; width: 100%; color: white; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: var(--gold); background: #161616; }
+        .page { transition: all 0.3s ease; }
+        .hidden { display: none !important; }
+        .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
+        .safe-top { padding-top: env(safe-area-inset-top); }
+        button:active { transform: scale(0.96); }
+    </style>
+</head>
+<body class="antialiased select-none">
+
+    <div id="login-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center p-8">
+        <div class="mb-12 text-center animate-pulse">
+            <h1 class="text-5xl font-black font-logo tracking-tighter italic">FERAH<span class="text-[#f5a623]">EV</span></h1>
+            <p class="text-[#8bc34a] font-bold tracking-[0.4em] text-[10px] mt-1 uppercase">İstanbul</p>
+        </div>
+        
+        <div class="w-full max-w-sm space-y-4">
+            <input type="text" id="login-user" placeholder="Kullanıcı Adı" class="input-box text-center font-bold uppercase tracking-widest">
+            <input type="password" id="login-pass" placeholder="Şifre" class="input-box text-center font-bold">
+            <button id="btn-do-login" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/20">GİRİŞ YAP</button>
+            <button id="btn-admin-gate" class="w-full py-2 text-[10px] text-zinc-700 font-bold uppercase tracking-widest opacity-50 mt-4">Sistem Yönetimi</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="hidden min-h-screen flex flex-col">
+        <header class="safe-top sticky top-0 z-50 glass border-b border-white/5 px-6 py-5 flex justify-between items-center">
+            <div class="flex flex-col">
+                <span class="font-logo font-black text-xl tracking-tighter italic leading-none">FERAH<span class="text-[#f5a623]">EV</span></span>
+                <span id="role-tag" class="text-[8px] text-[#8bc34a] font-bold tracking-[0.2em] uppercase">İstanbul</span>
+            </div>
+            <button onclick="logout()" class="w-10 h-10 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-[10px] font-bold text-zinc-500">ÇIK</button>
+        </header>
+
+        <main class="flex-1 pb-32 p-6 overflow-y-auto">
+            
+            <div id="page-home" class="page space-y-6">
+                <div class="flex justify-between items-end">
+                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">Selam, <span id="user-display" class="text-zinc-500">Okur</span></h2>
+                    <div class="bg-zinc-900 px-3 py-1 rounded-full border border-white/10 text-[10px] font-black text-orange-500 italic">🔥 AKTİF</div>
+                </div>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] font-black text-zinc-500 uppercase tracking-widest mb-1">Risale-i Nur</p>
+                            <p class="text-4xl font-black italic"><span id="val-risale">0</span> <span class="text-[10px] opacity-20 not-italic uppercase font-bold">sayfa</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center text-xl shadow-inner">📖</div>
+                    </div>
+                    <div class="bg-zinc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest mb-1">Kur'an-ı Kerim</p>
+                            <p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span> <span class="text-[10px] opacity-20 text-white not-italic uppercase font-bold">sayfa</span></p>
+                        </div>
+                        <div class="w-12 h-12 bg-[#f5a623]/10 rounded-2xl flex items-center justify-center text-xl text-[#f5a623] shadow-inner">🕌</div>
+                    </div>
+                </div>
+
+                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 bg-[#8bc34a] rounded-full animate-pulse"></span>
+                        <h3 class="text-xs font-black text-[#8bc34a] uppercase tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
+                    </div>
+                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4 border border-[#8bc34a]/20">
+                        <input type="text" id="new-user-name" placeholder="Kullanıcı Adı" class="input-box !py-3 !text-sm !rounded-xl">
+                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box !py-3 !text-sm !rounded-xl">
+                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs uppercase tracking-widest">KULLANICIYI SİSTEME EKLE</button>
+                    </div>
+                    <div id="user-list-render" class="space-y-2">
+                        </div>
+                </div>
+            </div>
+
+            <div id="page-entry" class="page hidden space-y-8">
+                <div class="text-center">
+                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">VERİ GİRİŞİ ✍️</h2>
+                    <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1">Bugünkü okumalarını işle</p>
+                </div>
+                <div class="space-y-4">
+                    <input type="date" id="entry-date" class="input-box text-center font-bold tracking-tighter">
+                    <div class="relative">
+                        <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box pl-14 font-bold">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">📖</span>
+                    </div>
+                    <div class="relative">
+                        <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box pl-14 font-bold text-[#f5a623]">
+                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">🕌</span>
+                    </div>
+                    <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/30 mt-4">KAYDI TAMAMLA 🔥</button>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="fixed bottom-0 left-0 right-0 glass safe-bottom border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
+            <button onclick="nav('home')" id="tab-home" class="flex flex-col items-center gap-1 opacity-100 transition-all active:scale-90">
+                <span class="text-2xl">📊</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">DURUM</span>
+            </button>
+            <button onclick="nav('entry')" id="tab-entry" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black font-black text-3xl active:scale-90 transition-all">+</button>
+            <button onclick="nav('home')" class="flex flex-col items-center gap-1 opacity-30 active:scale-90 transition-all">
+                <span class="text-2xl">🏆</span>
+                <span class="text-[8px] font-black uppercase tracking-widest">SIRALAMA</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Senin Gönderdiğin Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
+            authDomain: "ferahev.firebaseapp.com",
+            projectId: "ferahev",
+            storageBucket: "ferahev.firebasestorage.app",
+            messagingSenderId: "937908607106",
+            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const appId = "ferahev_istanbul_sys_v2"; // Sabit Sistem ID
+
+        let sessionUser = null;
+
+        // --- GİRİŞ MANTIĞI ---
+        document.getElementById('btn-do-login').onclick = async () => {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+
+            if(!u || !p) return alert("Bilgileri gir kanka.");
+
+            const userRef = doc(db, 'artifacts', appId, 'users', u);
+            const snap = await getDoc(userRef);
+
+            if(snap.exists() && snap.data().password === p) {
+                sessionUser = { id: u, ...snap.data() };
+                startApp();
+            } else {
+                alert("Hatalı kullanıcı adı veya şifre!");
+            }
+        };
+
+        // --- ADMİN GİRİŞİ ---
+        document.getElementById('btn-admin-gate').onclick = () => {
+            const master = prompt("Admin Şifresini Gir:");
+            if(master === "ferah123") { // DEĞİŞTİREBİLİRSİN
+                sessionUser = { id: 'admin', role: 'admin' };
+                startApp();
+            }
+        };
+
+        function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
+            
+            if(sessionUser.role === 'admin') {
+                document.getElementById('admin-only-section').classList.remove('hidden');
+                document.getElementById('role-tag').innerText = "YÖNETİCİ";
+                loadUsersForAdmin();
+            }
+            loadStats();
+        }
+
+        // --- ADMİN: KULLANICI EKLEME ---
+        window.addUser = async () => {
+            const name = document.getElementById('new-user-name').value.trim().toLowerCase();
+            const pass = document.getElementById('new-user-pass').value;
+            if(!name || !pass) return alert("Eksik bilgi!");
+
+            await setDoc(doc(db, 'artifacts', appId, 'users', name), {
+                password: pass,
+                role: 'user',
+                createdAt: new Date().toISOString()
+            });
+            alert(name + " başarıyla eklendi.");
+            loadUsersForAdmin();
+            document.getElementById('new-user-name').value = "";
+            document.getElementById('new-user-pass').value = "";
+        };
+
+        async function loadUsersForAdmin() {
+            const snap = await getDocs(collection(db, 'artifacts', appId, 'users'));
+            const list = document.getElementById('user-list-render');
+            list.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data();
+                list.innerHTML += `<div class="bg-zinc-900 p-4 rounded-2xl flex justify-between items-center border border-white/5">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-black uppercase text-white">${d.id}</span>
+                        <span class="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Şifre: ${data.password}</span>
+                    </div>
+                    <span class="text-[10px] text-[#8bc34a] font-bold italic">AKTİF</span>
+                </div>`;
+            });
+        }
+
+        // --- VERİ KAYDI ---
+        window.saveEntry = async () => {
+            const date = document.getElementById('entry-date').value;
+            const r = document.getElementById('in-r').value || 0;
+            const q = document.getElementById('in-q').value || 0;
+            
+            if(!date) return alert("Tarih seçmelisin!");
+            if(sessionUser.id === 'admin') return alert("Admin olarak veri giremezsin, kullanıcı hesabı aç!");
+
+            await setDoc(doc(db, 'artifacts', appId, 'users', sessionUser.id, 'data', date), {
+                risale: r, quran: q, date: date, savedAt: new Date().toISOString()
+            });
+            alert("Harika! Veriler işlendi. 🔥");
+            nav('home');
+        };
+
+        function loadStats() {
+            if(sessionUser.id === 'admin') return;
+            const ref = collection(db, 'artifacts', appId, 'users', sessionUser.id, 'data');
+            onSnapshot(ref, snap => {
+                let tr = 0, tq = 0;
+                snap.forEach(d => { 
+                    tr += Number(d.data().risale || 0); 
+                    tq += Number(d.data().quran || 0); 
+                });
+                document.getElementById('val-risale').innerText = tr;
+                document.getElementById('val-quran').innerText = tq;
+            });
+        }
+
+        // Navigasyon
+        window.nav = (p) => {
+            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
+            document.getElementById('page-'+p).classList.remove('hidden');
+        };
+
+        window.logout = () => location.reload();
+        document.getElementById('entry-date').valueAsDate = new Date();
+
+    </script>
+</body>
+</html>
+
