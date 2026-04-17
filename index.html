@@ -2,39 +2,385 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ferah EV | İstanbul</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ferah EV | İstanbul - İbadet Takip Sistemi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        :root {
-            --gold: #f5a623;
-            --gold-dark: #ff8c00;
-            --green: #8bc34a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         body {
             font-family: 'Inter', sans-serif;
-            background: #0a0a0a;
-            color: #fff;
+            background: radial-gradient(circle at 10% 20%, #0b0e14, #030507);
+            color: #ffffff;
             overscroll-behavior: none;
         }
         .logo-font { font-family: 'Montserrat', sans-serif; }
-        .gold-gradient { background: linear-gradient(135deg, #f5a623, #ff8c00); }
+        
+        /* Modern Gradients */
+        .gold-gradient { background: linear-gradient(105deg, #F9B23F 0%, #FFD166 100%); }
+        .green-gradient { background: linear-gradient(105deg, #8BC34A 0%, #A9D96C 100%); }
+        .purple-gradient { background: linear-gradient(105deg, #A855F7 0%, #C084FC 100%); }
+        
+        /* Glassmorphism ++ */
         .glass {
-            background: rgba(20, 20, 20, 0.85);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(18, 22, 28, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,215,120,0.15);
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.4);
         }
-        .input {
-            background: #111;
-            border: 1px solid #333;
-            transition: all 0.3s;
+        .glass-card {
+            background: rgba(12, 15, 20, 0.65);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 200, 100, 0.2);
+            transition: all 0.25s ease;
         }
-        .input:focus {
-            border-color: var(--gold);
-            box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
+        .glass-card:hover {
+            border-color: rgba(245, 166, 35, 0.5);
+            transform: translateY(-3px);
+        }
+        .input-modern {
+            background: #0F1219;
+            border: 1.5px solid #2A2F3A;
+            border-radius: 2rem;
+            transition: all 0.2s;
+            color: white;
+        }
+        .input-modern:focus {
+            border-color: #F9B23F;
+            box-shadow: 0 0 0 4px rgba(249, 178, 63, 0.2);
+            outline: none;
+        }
+        button {
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+        button:active { transform: scale(0.96); }
+        .btn-glow {
+            box-shadow: 0 8px 20px -6px rgba(249, 178, 63, 0.4);
+        }
+        .animate-float {
+            animation: float 4s ease-in-out infinite;
+        }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        .badge-gold {
+            background: linear-gradient(135deg, #f5a62320, #ff8c0020);
+            border-left: 3px solid #F9B23F;
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e1e2a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #F9B23F;
+            border-radius: 10px;
+        }
+        .toast-notify {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) scale(0.9);
+            background: #1E1F2C;
+            backdrop-filter: blur(12px);
+            padding: 12px 24px;
+            border-radius: 60px;
+            border: 1px solid #F9B23F;
+            color: #F9B23F;
+            font-weight: 600;
+            z-index: 200;
+            opacity: 0;
+            transition: 0.2s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .toast-show {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        .ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10);
+            opacity: 0;
+            transition: transform .3s, opacity .5s;
+        }
+        .ripple:active:after {
+            transform: scale(0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-28">
+
+    <!-- TOAST MESAJ -->
+    <div id="toastMsg" class="toast-notify">✨ Başarılı</div>
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 transition-all duration-500">
+        <div class="w-full max-w-md text-center animate-float">
+            <div class="mb-10">
+                <h1 class="logo-font text-7xl font-black tracking-tighter bg-gradient-to-r from-white via-amber-300 to-amber-500 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
+                <p class="text-[#8bc34a] text-xs font-bold tracking-[6px] mt-2">İSTANBUL · NUR VAKFI</p>
+            </div>
+            <div class="glass rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-500/30">
+                <input id="login-user" type="text" placeholder="KULLANICI ADI" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium uppercase tracking-wider">
+                <input id="login-pass" type="password" placeholder="ŞİFRE" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium">
+                <button onclick="doLogin()" class="gold-gradient w-full py-5 rounded-2xl font-extrabold text-xl text-black tracking-widest shadow-xl transition-all hover:shadow-2xl">GİRİŞ YAP</button>
+                <button id="admin-btn" class="w-full py-4 text-sm font-semibold text-zinc-400 hover:text-amber-400 transition-colors border border-dashed border-zinc-700 hover:border-amber-500 rounded-2xl mt-2">👑 Yönetici Erişimi</button>
+            </div>
+            <p class="text-[10px] text-zinc-500 mt-6">Manevi yolculuğunuzu takip edin</p>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="main-app" class="hidden">
+        <!-- Header -->
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-white/10 shadow-md">
+            <div>
+                <h1 class="logo-font text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-amber-400 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
+                <p id="role-tag" class="text-[9px] text-[#8bc34a] font-bold tracking-widest">RAHMET TAKİP</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <span id="user-display" class="font-bold text-sm bg-zinc-800/60 px-3 py-1 rounded-full"></span>
+                <button onclick="logout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 border border-white/20 text-zinc-400 hover:text-amber-400 transition">✕</button>
+            </div>
+        </header>
+
+        <main class="p-5 space-y-6 overflow-y-auto" style="height: calc(100vh - 130px);">
+            <!-- ANA SAYFA -->
+            <div id="page-home" class="space-y-6">
+                <div class="text-center">
+                    <p class="text-zinc-400 text-sm tracking-wide">Hoş geldin,</p>
+                    <h2 id="welcome-name" class="text-3xl font-extrabold bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"></h2>
+                </div>
+
+                <!-- Kartlar -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="glass-card rounded-3xl p-5 text-center">
+                        <p class="text-xs font-bold text-zinc-400 tracking-wider">RİSALE-İ NUR</p>
+                        <p id="total-risale" class="text-5xl font-black mt-2 text-amber-300">0</p>
+                        <p class="text-[10px] text-zinc-500">toplam sayfa</p>
+                    </div>
+                    <div class="glass-card rounded-3xl p-5 text-center">
+                        <p class="text-xs font-bold text-zinc-400 tracking-wider">KUR'AN-I KERİM</p>
+                        <p id="total-quran" class="text-5xl font-black mt-2 text-emerald-400">0</p>
+                        <p class="text-[10px] text-zinc-500">toplam sayfa</p>
+                    </div>
+                </div>
+
+                <!-- Günlük Hedef Widget -->
+                <div class="glass rounded-3xl p-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs uppercase tracking-wider text-amber-400 font-bold">🎯 Günlük Hedefim</p>
+                        <p class="text-2xl font-black mt-1"><span id="daily-goal-val">20</span> sayfa</p>
+                    </div>
+                    <button id="editGoalBtn" class="bg-zinc-800 px-5 py-2 rounded-full text-xs font-bold hover:bg-amber-500/20 transition">✎ Düzenle</button>
+                </div>
+
+                <!-- Bugünkü İlerleme + Başarı Rozetleri -->
+                <div class="glass rounded-3xl p-6 text-center">
+                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">🏆 1000 Sayfaya Giden Yol</p>
+                    <div class="flex justify-center">
+                        <svg width="160" height="160">
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="#2A2F3A" stroke-width="14"></circle>
+                            <circle id="progress-circle" cx="80" cy="80" r="70" fill="none" stroke="url(#goldGrad)" stroke-width="14" stroke-dasharray="439.82" stroke-dashoffset="439.82" stroke-linecap="round" transform="rotate(-90 80 80)"></circle>
+                            <defs>
+                                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#F9B23F"/>
+                                    <stop offset="100%" stop-color="#FFD166"/>
+                                </linearGradient>
+                            </defs>
+                        </svg>
+                    </div>
+                    <p id="progress-percent" class="text-3xl font-black mt-2 text-amber-400">0%</p>
+                    <p class="text-xs text-zinc-400">Hedef: 1000 sayfa</p>
+                </div>
+
+                <!-- Son 7 Gün Grafiği (Çizgi) -->
+                <div class="glass-card rounded-3xl p-4">
+                    <p class="text-xs font-bold text-zinc-400 mb-3 tracking-wider">📈 SON 7 GÜN AKTİVİTE</p>
+                    <canvas id="weeklyChart" height="150" class="w-full"></canvas>
+                </div>
+
+                <!-- Lider Tablosu (Herkes görebilir) -->
+                <div class="glass-card rounded-3xl p-5">
+                    <div class="flex justify-between items-center mb-3">
+                        <p class="text-xs font-bold text-amber-400 tracking-wider">🏅 EN ÇOK OKUYANLAR</p>
+                        <span class="text-[10px] text-zinc-500">Manevi Yarış</span>
+                    </div>
+                    <div id="leaderboard-list" class="space-y-2"></div>
+                </div>
+
+                <!-- Rozetlerim -->
+                <div id="badges-container" class="glass-card rounded-3xl p-5">
+                    <p class="text-xs font-bold text-zinc-400 mb-3">🎖️ BAŞARI ROZETLERİM</p>
+                    <div id="badges-list" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-extrabold text-xl rounded-3xl flex items-center justify-center gap-3 shadow-2xl btn-glow ripple mt-4">
+                    ✨ Yeni Kayıt Ekle <span class="text-3xl">+</span>
+                </button>
+            </div>
+
+            <!-- KAYIT SAYFASI -->
+            <div id="page-entry" class="hidden space-y-6">
+                <div class="glass rounded-3xl p-7">
+                    <h3 class="text-xl font-bold text-center text-amber-300 mb-6">📖 Bugünkü İbadet Kaydı</h3>
+                    <input id="entry-date" type="date" class="input-modern w-full px-6 py-4 rounded-2xl text-center mb-6 font-medium">
+                    
+                    <!-- Hızlı Ekleme Butonları -->
+                    <div class="flex gap-3 mb-6 justify-center">
+                        <button type="button" onclick="quickAdd('risale', 10)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+10 Risale</button>
+                        <button type="button" onclick="quickAdd('risale', 25)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+25 Risale</button>
+                        <button type="button" onclick="quickAdd('quran', 5)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+5 Kur'an</button>
+                        <button type="button" onclick="quickAdd('quran', 10)" class="bg-zinc-800 px-4 py-2 rounded-full text-xs font-bold">+10 Kur'an</button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-xs text-amber-400 font-bold mb-2">📘 Risale-i Nur Sayfa</label>
+                            <input id="in-r" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-emerald-400 font-bold mb-2">🕋 Kur'an-ı Kerim Sayfa</label>
+                            <input id="in-q" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold text-emerald-300">
+                        </div>
+                    </div>
+                </div>
+                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl shadow-xl">💾 KAYDI TAMAMLA</button>
+                <button onclick="nav('home')" class="w-full py-4 text-zinc-400 text-sm">← Geri Dön</button>
+            </div>
+
+            <!-- YÖNETİCİ PANELİ -->
+            <div id="admin-only-section" class="hidden space-y-6">
+                <h3 class="uppercase text-xs tracking-[3px] text-emerald-400 font-bold">Yönetici Kontrolü</h3>
+                <div class="glass rounded-3xl p-6 space-y-5">
+                    <input id="new-user-name" type="text" placeholder="Yeni Kullanıcı Adı (küçük harf)" class="input-modern w-full px-5 py-4 rounded-2xl">
+                    <input id="new-user-pass" type="text" placeholder="Şifre" class="input-modern w-full px-5 py-4 rounded-2xl">
+                    <button onclick="addUser()" class="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg">➕ Kullanıcı Ekle</button>
+                </div>
+                <div>
+                    <p class="text-xs text-zinc-400 mb-3 font-bold">📋 Kayıtlı Kullanıcılar & Toplam Sayfaları</p>
+                    <div id="user-list-render" class="space-y-3 max-h-96 overflow-y-auto"></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Nav -->
+        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-6 py-3 flex justify-around items-center z-50 backdrop-blur-2xl">
+            <button onclick="nav('home')" class="flex flex-col items-center text-amber-400 transition">
+                <span class="text-2xl">📊</span>
+                <span class="text-[10px] font-bold mt-1">Dashboard</span>
+            </button>
+            <button onclick="nav('entry')" class="w-14 h-14 -mt-8 gold-gradient rounded-full flex items-center justify-center text-3xl text-black shadow-2xl ring-4 ring-black/50 transition hover:scale-105">✚</button>
+            <button id="admin-nav-btn" class="flex flex-col items-center opacity-60 transition">
+                <span class="text-2xl">⚙️</span>
+                <span class="text-[10px] font-bold mt-1">Admin</span>
+            </button>
+        </nav>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs, deleteDoc, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
+            authDomain: "ferahev.firebaseapp.com",
+            projectId: "ferahev",
+            storageBucket: "ferahev.firebasestorage.app",
+            messagingSenderId: "937908607106",
+            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        let sessionUser = null;
+        let weeklyChartInstance = null;
+        let currentStatsListener = null;
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = msg || (isError ? "⚠️ Hata" : "✅ Başarılı");
+            toast.style.color = isError ? "#F87171" : "#F9B23F";
+            toast.classList.add('toast-show');
+            setTimeout(() => toast.classList.remove('toast-show'), 2000);
+        }
+
+        window.doLogin = async () => {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+            if (!u || !p) return showToast("Kullanıcı adı/şifre girin", true);
+            try {
+                const snap = await getDoc(doc(db, 'users', u));
+                if (snap.exists() && snap.data().password === p) {
+                    sessionUser = { id: u, ...snap.data(), role: snap.data().role || 'user' };
+                    startApp();
+                } else alert("Hatalı giriş bilgileri.");
+            } catch(e) { alert("Bağlantı hatası"); }
+        };
+
+        window.adminGate = () => {
+            const pwd = prompt("👑 Yönetici Şifresi:");
+            if (pwd === "ferah123") {
+                sessionUser = { id: 'admin', role: 'admin' };
+                startApp();
+            } else if(pwd) showToast("Yanlış şifre!", true);
+        };
+
+        async function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('user-display').textContent = sessionUser.id.toUpperCase();
+            document.getElementById('welcome-name').textContent = sessionUser.id.toUpperCase();
+            
+            if (sessionUser.role === 'admin') {
+                document.getElementById('admin-only-section').classList.remove('hidden');
+                document.getElementById('admin-nav-btn').classList.remove('opacity-60');
+                loadUsersForAdmin();
+            } else {
+                document.getElementById('admin-only-section').classList.add('hidden');
+                document.getElementById('admin-nav-btn').classList.add('opacity-60');
+                loadUserGoal();
+            }
+            loadStats();
+            loadLeaderboard();
+            renderBadges(0);
+        }
+
+        window.logout = () => { if(currentStatsListener) currentStatsListener(); location.reload(); };
+
+        window.addUser = async () => {
+            if (sessionUser.role !== 'admin') return showToast("Yetkisiz işlem", true);
+            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
+            const p = document.getElementById('new-user-pass').value.trim();
+            if             box-shadow: 0 0 0 3px rgba(245, 166, 35, 0.2);
         }
         .card-hover:hover { transform: translateY(-4px); }
         .progress-ring {
