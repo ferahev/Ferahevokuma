@@ -3,224 +3,285 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Ferah EV | İstanbul - Risale, Kur'an & Cevşen Takip</title>
+    <title>Ferah EV | Risale · Kur'an · Cevşen</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 10% 20%, #0b0e14, #030507); color: #fff; overscroll-behavior: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', sans-serif; background: radial-gradient(circle at 10% 20%, #0b0e14, #030507); color: #fff; overscroll-behavior: none; min-height: 100vh; }
         .logo-font { font-family: 'Montserrat', sans-serif; }
         .gold-gradient { background: linear-gradient(105deg, #F9B23F 0%, #FFD166 100%); }
-        .green-gradient { background: linear-gradient(105deg, #8BC34A 0%, #A9D96C 100%); }
-        .glass { background: rgba(18, 22, 28, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255,215,120,0.15); box-shadow: 0 20px 35px -12px rgba(0,0,0,0.4); }
-        .glass-card { background: rgba(12, 15, 20, 0.65); backdrop-filter: blur(16px); border: 1px solid rgba(255, 200, 100, 0.2); transition: all 0.25s ease; }
-        .glass-card:hover { border-color: rgba(245, 166, 35, 0.5); transform: translateY(-3px); }
-        .input-modern { background: #0F1219; border: 1.5px solid #2A2F3A; border-radius: 2rem; transition: all 0.2s; color: white; }
-        .input-modern:focus { border-color: #F9B23F; box-shadow: 0 0 0 4px rgba(249, 178, 63, 0.2); outline: none; }
-        button { transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        .glass { background: rgba(18, 22, 28, 0.80); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,215,120,0.13); box-shadow: 0 20px 40px -12px rgba(0,0,0,0.5); }
+        .glass-card { background: rgba(12, 15, 20, 0.70); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,200,100,0.18); transition: all 0.25s ease; border-radius: 1.5rem; }
+        .glass-card:hover { border-color: rgba(245,166,35,0.45); transform: translateY(-3px); }
+        .input-modern { background: #0F1219; border: 1.5px solid #2A2F3A; border-radius: 1rem; transition: all 0.2s; color: white; font-family: 'Inter', sans-serif; width: 100%; }
+        .input-modern:focus { border-color: #F9B23F; box-shadow: 0 0 0 4px rgba(249,178,63,0.18); outline: none; }
+        .input-modern::placeholder { color: #4a5568; }
+        button { transition: all 0.18s cubic-bezier(0.2, 0.9, 0.4, 1.1); cursor: pointer; }
         button:active { transform: scale(0.96); }
-        .btn-glow { box-shadow: 0 8px 20px -6px rgba(249, 178, 63, 0.4); }
+        .btn-glow { box-shadow: 0 8px 24px -6px rgba(249,178,63,0.45); }
         .animate-float { animation: float 4s ease-in-out infinite; }
-        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
-        .toast-notify { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) scale(0.9); background: #1E1F2C; backdrop-filter: blur(12px); padding: 12px 24px; border-radius: 60px; border: 1px solid #F9B23F; color: #F9B23F; font-weight: 600; z-index: 200; opacity: 0; transition: 0.2s; pointer-events: none; white-space: nowrap; }
-        .toast-show { opacity: 1; transform: translateX(-50%) scale(1); }
-        .progress-ring__circle { transition: stroke-dashoffset 0.5s ease; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: #1e1e2a; }
-        ::-webkit-scrollbar-thumb { background: #F9B23F; border-radius: 10px; }
+        @keyframes float { 0%,100% { transform: translateY(0px); } 50% { transform: translateY(-9px); } }
+        .toast-notify { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) scale(0.9); background: #1a1c2a; backdrop-filter: blur(16px); padding: 13px 28px; border-radius: 60px; border: 1px solid #F9B23F; color: #F9B23F; font-weight: 700; font-size: 13px; z-index: 9999; opacity: 0; transition: 0.22s; pointer-events: none; white-space: nowrap; }
+        .toast-show { opacity: 1 !important; transform: translateX(-50%) scale(1) !important; }
+        .progress-ring { transition: stroke-dashoffset 0.6s ease; }
+        .badge-pill { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; border: 1px solid; }
+        .badge-earned { background: rgba(249,178,63,0.15); border-color: #F9B23F; color: #FFD166; }
+        .badge-locked { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.08); color: #4a5568; }
+        ::-webkit-scrollbar { width: 3px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #F9B23F55; border-radius: 10px; }
+        .page { display: none; }
+        .page.active { display: block; }
+        .leader-row:first-child .leader-rank { background: linear-gradient(135deg, #F9B23F, #FFD166); color: #000; }
+        .leader-row:nth-child(2) .leader-rank { background: rgba(192,192,192,0.2); color: #ccc; border: 1px solid #ccc5; }
+        .leader-row:nth-child(3) .leader-rank { background: rgba(205,127,50,0.2); color: #cd7f32; border: 1px solid #cd7f3255; }
     </style>
 </head>
-<body class="min-h-screen pb-28">
+<body class="pb-28">
 
-    <div id="toastMsg" class="toast-notify">✨ Başarılı</div>
+    <!-- TOAST -->
+    <div id="toastMsg" class="toast-notify">✅ Başarılı</div>
 
-    <!-- LOGIN SCREEN -->
-    <div id="login-screen" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-xl flex items-center justify-center p-6 transition-all duration-500">
-        <div class="w-full max-w-md text-center animate-float">
+    <!-- ═══════════ LOGIN SCREEN ═══════════ -->
+    <div id="login-screen" class="fixed inset-0 z-50 bg-black/92 backdrop-blur-2xl flex items-center justify-center p-6">
+        <div class="w-full max-w-sm text-center animate-float">
             <div class="mb-10">
-                <h1 class="logo-font text-7xl font-black tracking-tighter bg-gradient-to-r from-white via-amber-300 to-amber-500 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
-                <p class="text-[#8bc34a] text-xs font-bold tracking-[6px] mt-2">İSTANBUL · NUR & CEVŞEN</p>
+                <h1 class="logo-font text-[5.5rem] font-black tracking-tighter leading-none bg-gradient-to-br from-white via-amber-200 to-amber-500 bg-clip-text text-transparent">FERAH<span style="color:#F9B23F">EV</span></h1>
+                <p class="text-[#8bc34a] text-[10px] font-black tracking-[8px] mt-3 uppercase">İSTANBUL · NUR & CEVŞEN</p>
             </div>
-            <div class="glass rounded-3xl p-8 space-y-6 shadow-2xl border border-amber-500/30">
-                <input id="login-user" type="text" placeholder="KULLANICI ADI" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium uppercase tracking-wider">
-                <input id="login-pass" type="password" placeholder="ŞİFRE" class="input-modern w-full px-6 py-5 rounded-2xl text-center text-lg font-medium">
-                <button onclick="doLogin()" class="gold-gradient w-full py-5 rounded-2xl font-extrabold text-xl text-black tracking-widest shadow-xl transition-all hover:shadow-2xl">GİRİŞ YAP</button>
-                <!-- Admin butonu: hem onclick hem id ile güvence altında -->
-                <button id="admin-btn" onclick="adminGate()" class="w-full py-4 text-sm font-semibold text-zinc-400 hover:text-amber-400 transition-colors border border-dashed border-zinc-700 hover:border-amber-500 rounded-2xl mt-2">👑 Yönetici Erişimi</button>
+            <div class="glass rounded-3xl p-8 space-y-5 border border-amber-500/25 shadow-2xl">
+                <input id="login-user" type="text" placeholder="KULLANICI ADI" autocomplete="off" autocapitalize="none"
+                    class="input-modern px-6 py-5 text-center text-base font-semibold uppercase tracking-widest">
+                <input id="login-pass" type="password" placeholder="ŞİFRE"
+                    class="input-modern px-6 py-5 text-center text-base font-semibold tracking-widest">
+                <button onclick="doLogin()"
+                    class="gold-gradient w-full py-5 rounded-2xl font-black text-xl text-black tracking-widest shadow-xl btn-glow hover:opacity-90">
+                    GİRİŞ YAP
+                </button>
+                <button onclick="adminGate()"
+                    class="w-full py-4 text-sm font-bold text-zinc-500 hover:text-amber-400 transition border border-dashed border-zinc-700 hover:border-amber-600 rounded-2xl">
+                    👑 Yönetici Erişimi
+                </button>
             </div>
-            <p class="text-[10px] text-zinc-500 mt-6">Manevi yolculuğunuzu takip edin</p>
+            <p class="text-[10px] text-zinc-600 mt-6">Manevi yolculuğunuzu takip edin</p>
         </div>
     </div>
 
-    <!-- MAIN APP -->
-    <div id="main-app" class="hidden">
-        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-white/10 shadow-md">
+    <!-- ═══════════ MAIN APP ═══════════ -->
+    <div id="main-app" class="hidden flex-col" style="min-height:100vh;">
+
+        <!-- HEADER -->
+        <header class="glass sticky top-0 z-40 px-5 py-4 flex items-center justify-between border-b border-white/8 shadow-lg">
             <div>
                 <h1 class="logo-font text-2xl font-black tracking-tighter bg-gradient-to-r from-white to-amber-400 bg-clip-text text-transparent">FERAH<span class="text-amber-400">EV</span></h1>
-                <p id="role-tag" class="text-[9px] text-[#8bc34a] font-bold tracking-widest">RAHMET TAKİP</p>
+                <p id="role-tag" class="text-[9px] text-[#8bc34a] font-black tracking-[4px] uppercase">RAHMET TAKİP</p>
             </div>
             <div class="flex items-center gap-3">
-                <span id="user-display" class="font-bold text-sm bg-zinc-800/60 px-3 py-1 rounded-full"></span>
-                <button onclick="logout()" class="w-8 h-8 flex items-center justify-center rounded-full bg-black/40 border border-white/20 text-zinc-400 hover:text-amber-400 transition">✕</button>
+                <span id="user-display" class="font-bold text-sm bg-zinc-800/70 px-4 py-1.5 rounded-full border border-white/8 text-amber-300"></span>
+                <button onclick="logout()" class="w-9 h-9 flex items-center justify-center rounded-full bg-black/50 border border-white/15 text-zinc-400 hover:text-amber-400 hover:border-amber-500 transition">✕</button>
             </div>
         </header>
 
-        <main class="p-5 space-y-6 overflow-y-auto" style="height: calc(100vh - 130px);">
-            <!-- ANA SAYFA -->
-            <div id="page-home" class="space-y-6">
-                <div class="text-center">
-                    <p class="text-zinc-400 text-sm tracking-wide">Hoş geldin,</p>
-                    <h2 id="welcome-name" class="text-3xl font-extrabold bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent"></h2>
+        <!-- MAIN CONTENT -->
+        <main class="p-5 space-y-5 overflow-y-auto" style="height: calc(100dvh - 128px);">
+
+            <!-- ─── PAGE: HOME ─── -->
+            <div id="page-home" class="page active space-y-5">
+
+                <!-- Welcome -->
+                <div class="text-center pt-2">
+                    <p class="text-zinc-500 text-sm tracking-widest font-medium">Hoş geldin,</p>
+                    <h2 id="welcome-name" class="text-3xl font-black mt-1 bg-gradient-to-r from-amber-200 to-amber-500 bg-clip-text text-transparent tracking-tight"></h2>
                 </div>
 
-                <!-- Üç Kart: Risale, Kur'an, Cevşen -->
+                <!-- 3 Kart: Risale / Kur'an / Cevşen -->
                 <div class="grid grid-cols-3 gap-3">
-                    <div class="glass-card rounded-2xl p-4 text-center">
-                        <p class="text-[11px] font-bold text-zinc-400">RİSALE</p>
+                    <div class="glass-card p-4 text-center">
+                        <p class="text-[10px] font-black text-zinc-500 tracking-widest mb-1">RİSALE</p>
                         <p id="total-risale" class="text-3xl font-black text-amber-300">0</p>
+                        <p class="text-[9px] text-zinc-600 mt-1">sayfa</p>
                     </div>
-                    <div class="glass-card rounded-2xl p-4 text-center">
-                        <p class="text-[11px] font-bold text-zinc-400">KUR'AN</p>
+                    <div class="glass-card p-4 text-center">
+                        <p class="text-[10px] font-black text-zinc-500 tracking-widest mb-1">KUR'AN</p>
                         <p id="total-quran" class="text-3xl font-black text-emerald-400">0</p>
+                        <p class="text-[9px] text-zinc-600 mt-1">sayfa</p>
                     </div>
-                    <div class="glass-card rounded-2xl p-4 text-center">
-                        <p class="text-[11px] font-bold text-zinc-400">CEVŞEN</p>
+                    <div class="glass-card p-4 text-center">
+                        <p class="text-[10px] font-black text-zinc-500 tracking-widest mb-1">CEVŞEN</p>
                         <p id="total-cevsen" class="text-3xl font-black text-sky-400">0</p>
+                        <p class="text-[9px] text-zinc-600 mt-1">adet</p>
                     </div>
                 </div>
 
                 <!-- Günlük Hedef -->
                 <div class="glass rounded-3xl p-5 flex items-center justify-between">
                     <div>
-                        <p class="text-xs uppercase tracking-wider text-amber-400 font-bold">🎯 Günlük Hedefim</p>
-                        <p class="text-2xl font-black mt-1"><span id="daily-goal-val">20</span> birim</p>
-                        <p class="text-[10px] text-zinc-500">(Risale+Kur'an+Cevşen)</p>
+                        <p class="text-xs uppercase tracking-widest text-amber-400 font-black">🎯 Günlük Hedef</p>
+                        <p class="text-2xl font-black mt-1"><span id="daily-goal-val">20</span> <span class="text-sm text-zinc-400 font-medium">birim</span></p>
+                        <p class="text-[10px] text-zinc-600">Risale + Kur'an + Cevşen</p>
                     </div>
-                    <button id="editGoalBtn" class="bg-zinc-800 px-5 py-2 rounded-full text-xs font-bold hover:bg-amber-500/20 transition">✎ Düzenle</button>
+                    <button id="editGoalBtn" class="bg-zinc-800 hover:bg-amber-500/20 border border-white/8 hover:border-amber-500/40 px-5 py-2.5 rounded-2xl text-xs font-bold text-zinc-300 hover:text-amber-400 transition">✎ Düzenle</button>
                 </div>
 
-                <!-- Ana Daire İlerleme -->
+                <!-- Progress Ring -->
                 <div class="glass rounded-3xl p-6 text-center">
-                    <p class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-2">🏆 1000 Birime Giden Yol</p>
+                    <p class="text-[11px] font-black uppercase tracking-[4px] text-zinc-500 mb-4">🏆 1000 BİRİME GİDEN YOL</p>
                     <div class="flex justify-center">
-                        <svg width="160" height="160">
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="#2A2F3A" stroke-width="14"></circle>
-                            <circle id="progress-circle" cx="80" cy="80" r="70" fill="none" stroke="url(#goldGrad)" stroke-width="14" stroke-dasharray="439.82" stroke-dashoffset="439.82" stroke-linecap="round" transform="rotate(-90 80 80)"></circle>
-                            <defs><linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#F9B23F"/><stop offset="100%" stop-color="#FFD166"/></linearGradient></defs>
+                        <svg width="160" height="160" viewBox="0 0 160 160">
+                            <defs>
+                                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#F9B23F"/>
+                                    <stop offset="100%" stop-color="#FFD166"/>
+                                </linearGradient>
+                            </defs>
+                            <circle cx="80" cy="80" r="68" fill="none" stroke="#1e2433" stroke-width="12"/>
+                            <circle id="progress-circle" cx="80" cy="80" r="68" fill="none"
+                                stroke="url(#goldGrad)" stroke-width="12"
+                                stroke-dasharray="427.26" stroke-dashoffset="427.26"
+                                stroke-linecap="round" transform="rotate(-90 80 80)"
+                                class="progress-ring"/>
                         </svg>
                     </div>
-                    <p id="progress-percent" class="text-3xl font-black mt-2 text-amber-400">0%</p>
-                    <p class="text-xs text-zinc-400">Toplam birim (Risale+Kur'an+Cevşen)</p>
+                    <p id="progress-percent" class="text-4xl font-black text-amber-400 -mt-2">0%</p>
+                    <p id="progress-total" class="text-xs text-zinc-500 mt-1">0 / 1000 birim</p>
                 </div>
 
-                <!-- Son 7 Gün Grafiği -->
-                <div class="glass-card rounded-3xl p-4">
-                    <p class="text-xs font-bold text-zinc-400 mb-3 tracking-wider">📈 SON 7 GÜN AKTİVİTE (Toplam Birim)</p>
-                    <canvas id="weeklyChart" height="150" class="w-full"></canvas>
+                <!-- Weekly Chart -->
+                <div class="glass-card p-5">
+                    <p class="text-[11px] font-black uppercase tracking-[3px] text-zinc-500 mb-4">📈 SON 7 GÜN</p>
+                    <canvas id="weeklyChart" height="140"></canvas>
                 </div>
 
-                <!-- Lider Tablosu -->
-                <div class="glass-card rounded-3xl p-5">
-                    <div class="flex justify-between items-center mb-3">
-                        <p class="text-xs font-bold text-amber-400 tracking-wider">🏅 EN ÇOK OKUYANLAR</p>
-                        <span class="text-[10px] text-zinc-500">Risale+Kur'an+Cevşen</span>
+                <!-- Leaderboard -->
+                <div class="glass-card p-5">
+                    <div class="flex justify-between items-center mb-4">
+                        <p class="text-[11px] font-black uppercase tracking-[3px] text-amber-400">🏅 EN ÇOK OKUYANLAR</p>
+                        <span class="text-[9px] text-zinc-600 font-bold">Risale+Kur'an+Cevşen</span>
                     </div>
-                    <div id="leaderboard-list" class="space-y-2"></div>
+                    <div id="leaderboard-list" class="space-y-2">
+                        <p class="text-xs text-zinc-600 text-center py-4">Yükleniyor...</p>
+                    </div>
                 </div>
 
                 <!-- Rozetler -->
-                <div id="badges-container" class="glass-card rounded-3xl p-5">
-                    <p class="text-xs font-bold text-zinc-400 mb-3">🎖️ BAŞARI ROZETLERİM</p>
-                    <div id="badges-list" class="flex flex-wrap gap-2"></div>
+                <div class="glass-card p-5">
+                    <p class="text-[11px] font-black uppercase tracking-[3px] text-zinc-500 mb-4">🎖️ BAŞARI ROZETLERİM</p>
+                    <div id="badges-list" class="flex flex-wrap gap-2">
+                        <p class="text-xs text-zinc-600">Veriler yükleniyor...</p>
+                    </div>
                 </div>
 
-                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-extrabold text-xl rounded-3xl flex items-center justify-center gap-3 shadow-2xl btn-glow">✨ Yeni Kayıt Ekle <span class="text-3xl">+</span></button>
+                <!-- Kayıt Ekle Butonu -->
+                <button onclick="nav('entry')" class="w-full py-6 gold-gradient text-black font-black text-lg rounded-3xl flex items-center justify-center gap-3 shadow-2xl btn-glow">
+                    ✨ Yeni Kayıt Ekle <span class="text-3xl">+</span>
+                </button>
             </div>
 
-            <!-- KAYIT SAYFASI (Risale, Kur'an, Cevşen) -->
-            <div id="page-entry" class="hidden space-y-6">
+            <!-- ─── PAGE: ENTRY ─── -->
+            <div id="page-entry" class="page space-y-5">
                 <div class="glass rounded-3xl p-7">
-                    <h3 class="text-xl font-bold text-center text-amber-300 mb-6">📖 Bugünkü İbadet Kaydı</h3>
-                    <input id="entry-date" type="date" class="input-modern w-full px-6 py-4 rounded-2xl text-center mb-6 font-medium">
-                    
-                    <!-- Hızlı Ekleme Butonları -->
-                    <div class="flex flex-wrap gap-2 mb-6 justify-center">
-                        <button type="button" onclick="quickAdd('risale', 10)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+10 Risale</button>
-                        <button type="button" onclick="quickAdd('risale', 25)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+25 Risale</button>
-                        <button type="button" onclick="quickAdd('quran', 5)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+5 Kur'an</button>
-                        <button type="button" onclick="quickAdd('quran', 10)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+10 Kur'an</button>
-                        <button type="button" onclick="quickAdd('cevsen', 1)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+1 Cevşen</button>
-                        <button type="button" onclick="quickAdd('cevsen', 3)" class="bg-zinc-800 px-3 py-2 rounded-full text-xs font-bold">+3 Cevşen</button>
+                    <h3 class="text-lg font-black text-center text-amber-300 mb-6 tracking-wide">📖 BUGÜNKÜ İBADET KAYDI</h3>
+
+                    <input id="entry-date" type="date" class="input-modern px-6 py-4 text-center font-bold text-base mb-6">
+
+                    <!-- Hızlı Ekleme -->
+                    <div class="mb-6">
+                        <p class="text-[10px] text-zinc-600 font-bold uppercase tracking-widest mb-3">⚡ Hızlı Ekle</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" onclick="quickAdd('risale',10)" class="bg-zinc-800 hover:bg-amber-500/20 border border-white/8 hover:border-amber-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-amber-300 transition">+10 Risale</button>
+                            <button type="button" onclick="quickAdd('risale',25)" class="bg-zinc-800 hover:bg-amber-500/20 border border-white/8 hover:border-amber-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-amber-300 transition">+25 Risale</button>
+                            <button type="button" onclick="quickAdd('quran',5)"  class="bg-zinc-800 hover:bg-emerald-500/20 border border-white/8 hover:border-emerald-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-emerald-400 transition">+5 Kur'an</button>
+                            <button type="button" onclick="quickAdd('quran',10)" class="bg-zinc-800 hover:bg-emerald-500/20 border border-white/8 hover:border-emerald-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-emerald-400 transition">+10 Kur'an</button>
+                            <button type="button" onclick="quickAdd('cevsen',1)" class="bg-zinc-800 hover:bg-sky-500/20 border border-white/8 hover:border-sky-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-sky-400 transition">+1 Cevşen</button>
+                            <button type="button" onclick="quickAdd('cevsen',3)" class="bg-zinc-800 hover:bg-sky-500/20 border border-white/8 hover:border-sky-500/40 px-3 py-2 rounded-xl text-[11px] font-bold text-sky-400 transition">+3 Cevşen</button>
+                        </div>
                     </div>
 
-                    <div class="space-y-5">
+                    <!-- Inputs -->
+                    <div class="space-y-4">
                         <div>
-                            <label class="block text-xs text-amber-400 font-bold mb-2">📘 Risale-i Nur (Sayfa)</label>
-                            <input id="in-r" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold">
+                            <label class="block text-[11px] text-amber-400 font-black mb-2 uppercase tracking-wider">📘 Risale-i Nur (Sayfa)</label>
+                            <input id="in-r" type="number" min="0" placeholder="0"
+                                class="input-modern px-6 py-5 text-3xl text-center font-black text-amber-300">
                         </div>
                         <div>
-                            <label class="block text-xs text-emerald-400 font-bold mb-2">🕋 Kur'an-ı Kerim (Sayfa)</label>
-                            <input id="in-q" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold text-emerald-300">
+                            <label class="block text-[11px] text-emerald-400 font-black mb-2 uppercase tracking-wider">🕋 Kur'an-ı Kerim (Sayfa)</label>
+                            <input id="in-q" type="number" min="0" placeholder="0"
+                                class="input-modern px-6 py-5 text-3xl text-center font-black text-emerald-300">
                         </div>
                         <div>
-                            <label class="block text-xs text-sky-400 font-bold mb-2">🤲 Cevşen (Adet)</label>
-                            <input id="in-c" type="number" placeholder="0" class="input-modern w-full px-6 py-5 rounded-2xl text-3xl text-center font-bold text-sky-300">
+                            <label class="block text-[11px] text-sky-400 font-black mb-2 uppercase tracking-wider">🤲 Cevşen (Adet)</label>
+                            <input id="in-c" type="number" min="0" placeholder="0"
+                                class="input-modern px-6 py-5 text-3xl text-center font-black text-sky-300">
                         </div>
                     </div>
                 </div>
-                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-bold text-xl rounded-3xl shadow-xl">💾 KAYDI TAMAMLA</button>
-                <button onclick="nav('home')" class="w-full py-4 text-zinc-400 text-sm">← Geri Dön</button>
+
+                <button onclick="saveEntry()" class="w-full py-6 gold-gradient text-black font-black text-xl rounded-3xl shadow-2xl btn-glow">
+                    💾 KAYDI TAMAMLA
+                </button>
+                <button onclick="nav('home')" class="w-full py-4 text-zinc-500 text-sm hover:text-zinc-300 transition font-medium">
+                    ← Geri Dön
+                </button>
             </div>
 
-            <!-- YÖNETİCİ PANELİ -->
-            <div id="admin-only-section" class="hidden space-y-6">
-                <h3 class="uppercase text-xs tracking-[3px] text-emerald-400 font-bold">Yönetici Kontrolü</h3>
-                <div class="glass rounded-3xl p-6 space-y-5">
-                    <input id="new-user-name" type="text" placeholder="Yeni Kullanıcı Adı (küçük harf)" class="input-modern w-full px-5 py-4 rounded-2xl">
-                    <input id="new-user-pass" type="text" placeholder="Şifre" class="input-modern w-full px-5 py-4 rounded-2xl">
-                    <button onclick="addUser()" class="w-full py-5 bg-emerald-600 text-white font-bold rounded-2xl shadow-lg">➕ Kullanıcı Ekle</button>
+            <!-- ─── PAGE: ADMIN ─── -->
+            <div id="page-admin" class="page space-y-5">
+                <div class="flex items-center gap-3 pt-2">
+                    <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full animate-pulse"></span>
+                    <h3 class="text-xs font-black text-emerald-400 uppercase tracking-[4px]">YÖNETİCİ PANELİ</h3>
                 </div>
-                <div>
-                    <p class="text-xs text-zinc-400 mb-3 font-bold">📋 Kayıtlı Kullanıcılar & Toplam Birimleri</p>
-                    <div id="user-list-render" class="space-y-3 max-h-96 overflow-y-auto"></div>
+
+                <!-- Kullanıcı Ekle -->
+                <div class="glass rounded-3xl p-6 space-y-4 border border-emerald-500/15">
+                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest">➕ Yeni Kullanıcı</p>
+                    <input id="new-user-name" type="text" placeholder="Kullanıcı adı (küçük harf)" autocapitalize="none"
+                        class="input-modern px-5 py-4 text-sm">
+                    <input id="new-user-pass" type="text" placeholder="Şifre"
+                        class="input-modern px-5 py-4 text-sm">
+                    <button onclick="addUser()" class="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-2xl shadow-lg transition text-sm tracking-wider">
+                        ➕ KULLANICI EKLE
+                    </button>
+                </div>
+
+                <!-- Kullanıcı Listesi -->
+                <div class="glass-card p-5">
+                    <p class="text-[11px] font-black text-zinc-400 uppercase tracking-widest mb-4">📋 KAYITLI KULLANICILAR</p>
+                    <div id="user-list-render" class="space-y-2 max-h-96 overflow-y-auto">
+                        <p class="text-xs text-zinc-600 text-center py-4">Yükleniyor...</p>
+                    </div>
                 </div>
             </div>
+
         </main>
 
-        <!-- Bottom Nav -->
-        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/10 px-6 py-3 flex justify-around items-center z-50 backdrop-blur-2xl">
-            <button onclick="nav('home')" class="flex flex-col items-center text-amber-400 transition">
+        <!-- BOTTOM NAV -->
+        <nav class="fixed bottom-0 left-0 right-0 glass border-t border-white/8 px-6 py-3 flex justify-around items-center z-50">
+            <button onclick="nav('home')" id="nav-home" class="flex flex-col items-center gap-1 transition text-amber-400">
                 <span class="text-2xl">📊</span>
-                <span class="text-[10px] font-bold mt-1">Dashboard</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Dashboard</span>
             </button>
-            <button onclick="nav('entry')" class="w-14 h-14 -mt-8 gold-gradient rounded-full flex items-center justify-center text-3xl text-black shadow-2xl ring-4 ring-black/50 transition hover:scale-105">✚</button>
-            <button id="admin-nav-btn" class="flex flex-col items-center opacity-60 transition">
+            <button onclick="nav('entry')" id="nav-entry"
+                class="w-14 h-14 -mt-8 gold-gradient rounded-full flex items-center justify-center text-3xl text-black shadow-2xl ring-4 ring-black/60 hover:scale-105 transition font-black">
+                ✚
+            </button>
+            <button onclick="nav('admin')" id="nav-admin" class="flex flex-col items-center gap-1 transition text-zinc-500 opacity-50">
                 <span class="text-2xl">⚙️</span>
-                <span class="text-[10px] font-bold mt-1">Admin</span>
+                <span class="text-[9px] font-black uppercase tracking-widest">Admin</span>
             </button>
         </nav>
     </div>
 
+    <!-- ═══════════════════════════════════════════════════════
+         FIREBASE + UYGULAMA MANTIĞI (TEK SCRIPT BLOĞU)
+    ════════════════════════════════════════════════════════ -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        let sessionUser = null;
-        let weeklyChartInstance = null;
-        let currentStatsListener = null;
-
-        function showToast(msg, isError = false) {
+        import { initializeApp }            from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getFirestore, doc, setDoc, getDoc, getDocFromServer,
+                 collection, onSnapshot, getDocs, updateDoc, deleteDoc }
+                                            from "https://www.gstatic.        function showToast(msg, isError = false) {
             const toast = document.getElementById('toastMsg');
             toast.textContent = msg || (isError ? "⚠️ Hata" : "✅ Başarılı");
             toast.style.color = isError ? "#F87171" : "#F9B23F";
