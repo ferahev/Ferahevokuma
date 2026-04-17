@@ -1,197 +1,3 @@
-inc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-center">
-                        <div>
-                            <p class="text-[10px] font-black text-[#f5a623] uppercase tracking-widest mb-1">Kur'an-ı Kerim</p>
-                            <p class="text-4xl font-black italic text-[#f5a623]"><span id="val-quran">0</span> <span class="text-[10px] opacity-20 text-white not-italic uppercase font-bold">sayfa</span></p>
-                        </div>
-                        <div class="w-12 h-12 bg-[#f5a623]/10 rounded-2xl flex items-center justify-center text-xl text-[#f5a623] shadow-inner">🕌</div>
-                    </div>
-                </div>
-
-                <div id="admin-only-section" class="hidden space-y-4 pt-10 border-t border-white/5">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2 h-2 bg-[#8bc34a] rounded-full animate-pulse"></span>
-                        <h3 class="text-xs font-black text-[#8bc34a] uppercase tracking-[0.2em]">YÖNETİCİ PANELİ</h3>
-                    </div>
-                    <div class="bg-zinc-900 rounded-[2rem] p-6 space-y-4 border border-[#8bc34a]/20">
-                        <input type="text" id="new-user-name" placeholder="Kullanıcı Adı" class="input-box !py-3 !text-sm !rounded-xl">
-                        <input type="text" id="new-user-pass" placeholder="Şifre" class="input-box !py-3 !text-sm !rounded-xl">
-                        <button onclick="addUser()" class="w-full py-4 bg-[#8bc34a] text-black font-black rounded-xl text-xs uppercase tracking-widest">KULLANICIYI SİSTEME EKLE</button>
-                    </div>
-                    <div id="user-list-render" class="space-y-2">
-                        </div>
-                </div>
-            </div>
-
-            <div id="page-entry" class="page hidden space-y-8">
-                <div class="text-center">
-                    <h2 class="text-2xl font-black italic uppercase tracking-tighter">VERİ GİRİŞİ ✍️</h2>
-                    <p class="text-zinc-600 text-[10px] font-bold uppercase tracking-widest mt-1">Bugünkü okumalarını işle</p>
-                </div>
-                <div class="space-y-4">
-                    <input type="date" id="entry-date" class="input-box text-center font-bold tracking-tighter">
-                    <div class="relative">
-                        <input type="number" id="in-r" placeholder="Risale Sayfa" class="input-box pl-14 font-bold">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">📖</span>
-                    </div>
-                    <div class="relative">
-                        <input type="number" id="in-q" placeholder="Kur'an Sayfa" class="input-box pl-14 font-bold text-[#f5a623]">
-                        <span class="absolute left-5 top-1/2 -translate-y-1/2 opacity-30">🕌</span>
-                    </div>
-                    <button onclick="saveEntry()" class="w-full py-5 gold-gradient text-black font-black rounded-2xl uppercase tracking-widest shadow-xl shadow-orange-900/30 mt-4">KAYDI TAMAMLA 🔥</button>
-                </div>
-            </div>
-
-        </main>
-
-        <nav class="fixed bottom-0 left-0 right-0 glass safe-bottom border-t border-white/5 px-12 py-5 flex justify-between items-center z-50">
-            <button onclick="nav('home')" id="tab-home" class="flex flex-col items-center gap-1 opacity-100 transition-all active:scale-90">
-                <span class="text-2xl">📊</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">DURUM</span>
-            </button>
-            <button onclick="nav('entry')" id="tab-entry" class="w-14 h-14 gold-gradient rounded-full flex items-center justify-center text-black shadow-2xl -mt-14 border-[6px] border-black font-black text-3xl active:scale-90 transition-all">+</button>
-            <button onclick="nav('home')" class="flex flex-col items-center gap-1 opacity-30 active:scale-90 transition-all">
-                <span class="text-2xl">🏆</span>
-                <span class="text-[8px] font-black uppercase tracking-widest">SIRALAMA</span>
-            </button>
-        </nav>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Senin Gönderdiğin Firebase Config
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
-            authDomain: "ferahev.firebaseapp.com",
-            projectId: "ferahev",
-            storageBucket: "ferahev.firebasestorage.app",
-            messagingSenderId: "937908607106",
-            appId: "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const appId = "default"; // Sabit Sistem ID
-
-        let sessionUser = null;
-
-        // --- GİRİŞ MANTIĞI ---
-        document.getElementById('btn-do-login').onclick = async () => {
-            const u = document.getElementById('login-user').value.trim().toLowerCase();
-            const p = document.getElementById('login-pass').value;
-
-            if(!u || !p) return alert("Bilgileri gir kanka.");
-
-            const userRef = doc(db, 'artifacts', appId, 'users', u);
-            const snap = await getDoc(userRef);
-
-            if(snap.exists() && snap.data().password === p) {
-                sessionUser = { id: u, ...snap.data() };
-                startApp();
-            } else {
-                alert("Hatalı kullanıcı adı veya şifre!");
-            }
-        };
-
-        // --- ADMİN GİRİŞİ ---
-        document.getElementById('btn-admin-gate').onclick = () => {
-            const master = prompt("Admin Şifresini Gir:");
-            if(master === "ferah123") { // DEĞİŞTİREBİLİRSİN
-                sessionUser = { id: 'admin', role: 'admin' };
-                startApp();
-            }
-        };
-
-        function startApp() {
-            document.getElementById('login-screen').classList.add('hidden');
-            document.getElementById('main-app').classList.remove('hidden');
-            document.getElementById('user-display').innerText = sessionUser.id.toUpperCase();
-            
-            if(sessionUser.role === 'admin') {
-                document.getElementById('admin-only-section').classList.remove('hidden');
-                document.getElementById('role-tag').innerText = "YÖNETİCİ";
-                loadUsersForAdmin();
-            }
-            loadStats();
-        }
-
-        // --- ADMİN: KULLANICI EKLEME ---
-        window.addUser = async () => {
-            const name = document.getElementById('new-user-name').value.trim().toLowerCase();
-            const pass = document.getElementById('new-user-pass').value;
-            if(!name || !pass) return alert("Eksik bilgi!");
-
-            await setDoc(doc(db, 'artifacts', appId, 'users', name), {
-                password: pass,
-                role: 'user',
-                createdAt: new Date().toISOString()
-            });
-            alert(name + " başarıyla eklendi.");
-            loadUsersForAdmin();
-            document.getElementById('new-user-name').value = "";
-            document.getElementById('new-user-pass').value = "";
-        };
-
-        async function loadUsersForAdmin() {
-            const snap = await getDocs(collection(db, 'artifacts', appId, 'users'));
-            const list = document.getElementById('user-list-render');
-            list.innerHTML = "";
-            snap.forEach(d => {
-                const data = d.data();
-                list.innerHTML += `<div class="bg-zinc-900 p-4 rounded-2xl flex justify-between items-center border border-white/5">
-                    <div class="flex flex-col">
-                        <span class="text-xs font-black uppercase text-white">${d.id}</span>
-                        <span class="text-[9px] text-zinc-600 font-bold uppercase tracking-widest">Şifre: ${data.password}</span>
-                    </div>
-                    <span class="text-[10px] text-[#8bc34a] font-bold italic">AKTİF</span>
-                </div>`;
-            });
-        }
-
-        // --- VERİ KAYDI ---
-        window.saveEntry = async () => {
-            const date = document.getElementById('entry-date').value;
-            const r = document.getElementById('in-r').value || 0;
-            const q = document.getElementById('in-q').value || 0;
-            
-            if(!date) return alert("Tarih seçmelisin!");
-            if(sessionUser.id === 'admin') return alert("Admin olarak veri giremezsin, kullanıcı hesabı aç!");
-
-            await setDoc(doc(db, 'artifacts', appId, 'users', sessionUser.id, 'data', date), {
-                risale: r, quran: q, date: date, savedAt: new Date().toISOString()
-            });
-            alert("Harika! Veriler işlendi. 🔥");
-            nav('home');
-        };
-
-        function loadStats() {
-            if(sessionUser.id === 'admin') return;
-            const ref = collection(db, 'artifacts', appId, 'users', sessionUser.id, 'data');
-            onSnapshot(ref, snap => {
-                let tr = 0, tq = 0;
-                snap.forEach(d => { 
-                    tr += Number(d.data().risale || 0); 
-                    tq += Number(d.data().quran || 0); 
-                });
-                document.getElementById('val-risale').innerText = tr;
-                document.getElementById('val-quran').innerText = tq;
-            });
-        }
-
-        // Navigasyon
-        window.nav = (p) => {
-            document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
-            document.getElementById('page-'+p).classList.remove('hidden');
-        };
-
-        window.logout = () => location.reload();
-        document.getElementById('entry-date').valueAsDate = new Date();
-
-    </script>
-</body>
-</html>
-
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -475,4 +281,406 @@ inc-900/40 p-6 rounded-[2rem] border border-white/5 flex justify-between items-c
         import { initializeApp }            from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getFirestore, doc, setDoc, getDoc, getDocFromServer,
                  collection, onSnapshot, getDocs, updateDoc, deleteDoc }
-                                            from "https://www.gstatic.
+                                            from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ── Firebase Konfigürasyon ──────────────────────────────────
+        const firebaseConfig = {
+            apiKey:            "AIzaSyDFD003y51UDi0wEl7VIFiOCwY-BgHb_C0",
+            authDomain:        "ferahev.firebaseapp.com",
+            projectId:         "ferahev",
+            storageBucket:     "ferahev.firebasestorage.app",
+            messagingSenderId: "937908607106",
+            appId:             "1:937908607106:web:758c5f9ce0ca9ea87f3c9b"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+
+        // ── State ───────────────────────────────────────────────────
+        let sessionUser         = null;
+        let weeklyChartInstance = null;
+        let statsUnsubscribe    = null;
+
+        // ── Toast ───────────────────────────────────────────────────
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toastMsg');
+            t.textContent = msg;
+            t.style.borderColor = isError ? '#F87171' : '#F9B23F';
+            t.style.color       = isError ? '#F87171' : '#F9B23F';
+            t.classList.add('toast-show');
+            setTimeout(() => t.classList.remove('toast-show'), 2200);
+        }
+
+        // ── Login ───────────────────────────────────────────────────
+        window.doLogin = async () => {
+            const u = document.getElementById('login-user').value.trim().toLowerCase();
+            const p = document.getElementById('login-pass').value;
+            if (!u || !p) return showToast("Kullanıcı adı ve şifre girin!", true);
+            try {
+                const snap = await getDoc(doc(db, 'users', u));
+                if (snap.exists() && snap.data().password === p) {
+                    sessionUser = { id: u, ...snap.data(), role: snap.data().role || 'user' };
+                    startApp();
+                } else {
+                    showToast("Hatalı kullanıcı adı veya şifre!", true);
+                }
+            } catch(e) {
+                showToast("Bağlantı hatası: " + e.message, true);
+            }
+        };
+
+        // Enter ile giriş
+        document.getElementById('login-pass').addEventListener('keydown', e => {
+            if (e.key === 'Enter') window.doLogin();
+        });
+
+        // ── Admin Gate ──────────────────────────────────────────────
+        window.adminGate = () => {
+            const pwd = prompt("👑 Yönetici Şifresi:");
+            if (pwd === null) return;
+            if (pwd === "ferah123") {
+                sessionUser = { id: 'admin', role: 'admin' };
+                startApp();
+                showToast("👑 Admin paneline hoş geldiniz!");
+            } else {
+                showToast("Yanlış şifre!", true);
+            }
+        };
+
+        // ── Start App ───────────────────────────────────────────────
+        async function startApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+
+            document.getElementById('user-display').textContent  = sessionUser.id.toUpperCase();
+            document.getElementById('welcome-name').textContent  = sessionUser.id.toUpperCase();
+
+            const isAdmin = sessionUser.role === 'admin';
+            document.getElementById('role-tag').textContent      = isAdmin ? 'YÖNETİCİ' : 'RAHMET TAKİP';
+            document.getElementById('nav-admin').style.opacity   = isAdmin ? '1' : '0.35';
+            document.getElementById('nav-admin').style.pointerEvents = isAdmin ? 'auto' : 'none';
+            document.getElementById('editGoalBtn').addEventListener('click', editGoal);
+
+            if (isAdmin) {
+                loadUsersForAdmin();
+            } else {
+                await loadUserGoal();
+                loadStats();
+                loadLeaderboard();
+            }
+            nav('home');
+        }
+
+        // ── Logout ──────────────────────────────────────────────────
+        window.logout = () => {
+            if (statsUnsubscribe) statsUnsubscribe();
+            location.reload();
+        };
+
+        // ── Navigation ──────────────────────────────────────────────
+        window.nav = (page) => {
+            document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('page-' + page);
+            if (target) target.classList.add('active');
+
+            // Nav butonları aktif renk
+            ['home','entry','admin'].forEach(p => {
+                const btn = document.getElementById('nav-' + p);
+                if (!btn) return;
+                btn.classList.toggle('text-amber-400', p === page);
+                btn.classList.toggle('text-zinc-500',  p !== page);
+            });
+
+            // Admin sayfasını sadece admin görebilir
+            if (page === 'admin' && sessionUser?.role !== 'admin') {
+                nav('home');
+            }
+        };
+
+        // ── Daily Goal ──────────────────────────────────────────────
+        async function loadUserGoal() {
+            const snap = await getDoc(doc(db, 'users', sessionUser.id));
+            const goal = snap.exists() ? (snap.data().dailyGoal || 20) : 20;
+            document.getElementById('daily-goal-val').textContent = goal;
+        }
+
+        async function editGoal() {
+            const current = document.getElementById('daily-goal-val').textContent;
+            const val = prompt("Yeni günlük hedef (birim):", current);
+            if (val === null) return;
+            const n = parseInt(val);
+            if (isNaN(n) || n < 1) return showToast("Geçersiz değer!", true);
+            await setDoc(doc(db, 'users', sessionUser.id), { dailyGoal: n }, { merge: true });
+            document.getElementById('daily-goal-val').textContent = n;
+            showToast("✅ Hedef güncellendi!");
+        }
+
+        // ── Quick Add ───────────────────────────────────────────────
+        window.quickAdd = (field, amount) => {
+            const map = { risale: 'in-r', quran: 'in-q', cevsen: 'in-c' };
+            const el = document.getElementById(map[field]);
+            if (!el) return;
+            el.value = (parseInt(el.value) || 0) + amount;
+        };
+
+        // ── Save Entry ──────────────────────────────────────────────
+        window.saveEntry = async () => {
+            if (sessionUser.role === 'admin') return showToast("Admin ile kayıt giremezsin!", true);
+
+            const date   = document.getElementById('entry-date').value;
+            const risale = parseInt(document.getElementById('in-r').value) || 0;
+            const quran  = parseInt(document.getElementById('in-q').value) || 0;
+            const cevsen = parseInt(document.getElementById('in-c').value) || 0;
+
+            if (!date) return showToast("Tarih seçmelisin!", true);
+            if (risale + quran + cevsen === 0) return showToast("En az bir değer gir!", true);
+
+            try {
+                await setDoc(doc(db, 'users', sessionUser.id, 'data', date), {
+                    risale, quran, cevsen, savedAt: new Date().toISOString()
+                });
+                showToast("🔥 Harika! Kayıt tamamlandı.");
+                // inputları sıfırla
+                ['in-r','in-q','in-c'].forEach(id => document.getElementById(id).value = '');
+                nav('home');
+            } catch(e) {
+                showToast("Kayıt hatası: " + e.message, true);
+            }
+        };
+
+        // ── Load Stats (realtime) ────────────────────────────────────
+        function loadStats() {
+            if (sessionUser.role === 'admin') return;
+            if (statsUnsubscribe) statsUnsubscribe();
+
+            statsUnsubscribe = onSnapshot(
+                collection(db, 'users', sessionUser.id, 'data'),
+                (snap) => {
+                    let totR = 0, totQ = 0, totC = 0;
+                    const daily = {};
+
+                    snap.forEach(d => {
+                        const data = d.data();
+                        const r = Number(data.risale  || 0);
+                        const q = Number(data.quran   || 0);
+                        const c = Number(data.cevsen  || 0);
+                        totR += r; totQ += q; totC += c;
+                        daily[d.id] = r + q + c;
+                    });
+
+                    const total = totR + totQ + totC;
+
+                    // Kartlar
+                    document.getElementById('total-risale').textContent = totR;
+                    document.getElementById('total-quran').textContent  = totQ;
+                    document.getElementById('total-cevsen').textContent = totC;
+
+                    // Progress ring (hedef 1000)
+                    const pct    = Math.min(Math.round((total / 1000) * 100), 100);
+                    const circum = 427.26;
+                    const offset = circum * (1 - pct / 100);
+                    document.getElementById('progress-circle').setAttribute('stroke-dashoffset', offset);
+                    document.getElementById('progress-percent').textContent = pct + '%';
+                    document.getElementById('progress-total').textContent   = total + ' / 1000 birim';
+
+                    // Badges
+                    renderBadges(total);
+
+                    // Weekly chart
+                    renderWeeklyChart(daily);
+
+                    // Leaderboard
+                    loadLeaderboard();
+                },
+                (err) => showToast("Veri hatası: " + err.message, true)
+            );
+        }
+
+        // ── Weekly Chart ─────────────────────────────────────────────
+        function renderWeeklyChart(daily) {
+            const labels = [];
+            const values = [];
+            const TR_DAYS = ['Paz','Pzt','Sal','Çar','Per','Cum','Cmt'];
+
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const key = d.toISOString().split('T')[0];
+                labels.push(TR_DAYS[d.getDay()]);
+                values.push(daily[key] || 0);
+            }
+
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            if (weeklyChartInstance) weeklyChartInstance.destroy();
+
+            weeklyChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: values.map((v,i) => i === 6 ? '#F9B23F' : 'rgba(249,178,63,0.25)'),
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false }, tooltip: {
+                        callbacks: { label: ctx => ctx.parsed.y + ' birim' }
+                    }},
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#6b7280', font: { size: 10, weight: '700' } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { color: '#6b7280', font: { size: 10 } }, beginAtZero: true }
+                    }
+                }
+            });
+        }
+
+        // ── Leaderboard ──────────────────────────────────────────────
+        async function loadLeaderboard() {
+            try {
+                const usersSnap = await getDocs(collection(db, 'users'));
+                const results = [];
+
+                for (const userDoc of usersSnap.docs) {
+                    if (userDoc.id === 'admin') continue;
+                    const dataSnap = await getDocs(collection(db, 'users', userDoc.id, 'data'));
+                    let total = 0;
+                    dataSnap.forEach(d => {
+                        total += (d.data().risale||0) + (d.data().quran||0) + (d.data().cevsen||0);
+                    });
+                    results.push({ id: userDoc.id, total });
+                }
+
+                results.sort((a, b) => b.total - a.total);
+
+                const medals = ['🥇','🥈','🥉'];
+                const container = document.getElementById('leaderboard-list');
+                container.innerHTML = '';
+
+                if (results.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Henüz kayıt yok</p>';
+                    return;
+                }
+
+                results.slice(0, 7).forEach((u, i) => {
+                    const isSelf = sessionUser && u.id === sessionUser.id;
+                    const div = document.createElement('div');
+                    div.className = 'leader-row flex items-center justify-between px-4 py-3 rounded-2xl ' + (isSelf ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-zinc-900/50 border border-white/5');
+                    div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <span class="leader-rank w-8 h-8 rounded-full flex items-center justify-center text-sm font-black ${i < 3 ? '' : 'bg-zinc-800 text-zinc-400'}">
+                                ${i < 3 ? medals[i] : (i+1)}
+                            </span>
+                            <span class="font-bold text-sm ${isSelf ? 'text-amber-300' : 'text-white'}">${u.id.toUpperCase()}</span>
+                        </div>
+                        <span class="font-black text-sm text-amber-400">${u.total} <span class="text-[10px] text-zinc-500 font-normal">birim</span></span>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch(e) {
+                document.getElementById('leaderboard-list').innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Yüklenemedi</p>';
+            }
+        }
+
+        // ── Badges ───────────────────────────────────────────────────
+        function renderBadges(total) {
+            const badges = [
+                { min: 10,   icon: '🌱', label: 'Tohumlar' },
+                { min: 50,   icon: '📖', label: '50 Birim' },
+                { min: 100,  icon: '⭐', label: '100 Birim' },
+                { min: 250,  icon: '🔥', label: '250 Birim' },
+                { min: 500,  icon: '💎', label: 'Yarı Yol' },
+                { min: 750,  icon: '🚀', label: '750 Birim' },
+                { min: 1000, icon: '👑', label: '1000 Birim' },
+            ];
+
+            const container = document.getElementById('badges-list');
+            container.innerHTML = '';
+
+            badges.forEach(b => {
+                const earned = total >= b.min;
+                const pill = document.createElement('span');
+                pill.className = 'badge-pill ' + (earned ? 'badge-earned' : 'badge-locked');
+                pill.textContent = b.icon + ' ' + b.label;
+                if (!earned) pill.title = b.min + ' birimde kazanırsın';
+                container.appendChild(pill);
+            });
+        }
+
+        // ── Admin: Kullanıcı Ekle ────────────────────────────────────
+        window.addUser = async () => {
+            const n = document.getElementById('new-user-name').value.trim().toLowerCase();
+            const p = document.getElementById('new-user-pass').value.trim();
+
+            if (!n || !p) return showToast("Kullanıcı adı ve şifre gerekli!", true);
+            if (n === 'admin') return showToast("'admin' adı kullanılamaz!", true);
+            if (p.length < 3) return showToast("Şifre en az 3 karakter olmalı!", true);
+
+            try {
+                const existing = await getDoc(doc(db, 'users', n));
+                if (existing.exists()) return showToast("Bu kullanıcı adı zaten alınmış!", true);
+
+                await setDoc(doc(db, 'users', n), {
+                    password: p, role: 'user', dailyGoal: 20,
+                    createdAt: new Date().toISOString()
+                });
+                showToast("✅ " + n.toUpperCase() + " sisteme eklendi!");
+                document.getElementById('new-user-name').value = '';
+                document.getElementById('new-user-pass').value = '';
+                loadUsersForAdmin();
+            } catch(e) {
+                showToast("Hata: " + e.message, true);
+            }
+        };
+
+        // ── Admin: Kullanıcı Listesi ─────────────────────────────────
+        async function loadUsersForAdmin() {
+            const container = document.getElementById('user-list-render');
+            container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Yükleniyor...</p>';
+
+            try {
+                const snap = await getDocs(collection(db, 'users'));
+                container.innerHTML = '';
+
+                for (const docSnap of snap.docs) {
+                    if (docSnap.id === 'admin') continue;
+                    const data   = docSnap.data();
+                    const uid    = docSnap.id;
+
+                    // Toplam okuma sayısını al
+                    const dataSnap = await getDocs(collection(db, 'users', uid, 'data'));
+                    let total = 0;
+                    dataSnap.forEach(d => {
+                        total += (d.data().risale||0) + (d.data().quran||0) + (d.data().cevsen||0);
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between items-center bg-zinc-900/60 border border-white/6 rounded-2xl px-4 py-3.5';
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-black text-sm uppercase text-white">${uid}</p>
+                            <p class="text-[10px] text-zinc-500 mt-0.5">Şifre: ${data.password} · Hedef: ${data.dailyGoal||20}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-black text-amber-400 text-base">${total}</p>
+                            <p class="text-[9px] text-zinc-600">birim</p>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+
+                if (container.children.length === 0) {
+                    container.innerHTML = '<p class="text-xs text-zinc-600 text-center py-4">Henüz kullanıcı yok</p>';
+                }
+            } catch(e) {
+                container.innerHTML = '<p class="text-xs text-red-500 text-center py-4">Yüklenemedi</p>';
+            }
+        }
+
+        // ── Default Tarih ────────────────────────────────────────────
+        document.getElementById('entry-date').valueAsDate = new Date();
+
+    </script>
+</body>
+</html>
